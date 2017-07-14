@@ -1,0 +1,83 @@
+% Template file for a standard thesis
+\documentclass[11pt]{isuthesis}
+\usepackage[pdftex]{graphicx}
+
+% Standard, old-style thesis
+\usepackage{isutraditional}   \chaptertitle
+
+
+% Old-style, thesis numbering down to subsubsection
+\alternate
+\usepackage{rotating}
+
+
+% Bibliography without numbers or labels
+\usepackage{natbib}
+\bibliographystyle{apa}
+
+
+%Optional Package to add PDF bookmarks and hypertext links
+\usepackage[pdftex,hypertexnames=false,linktocpage=true]{hyperref}
+\hypersetup{colorlinks=true,linkcolor=blue,anchorcolor=blue,citecolor=blue,filecolor=blue,urlcolor=blue,bookmarksnumbered=true,pdfview=FitB}
+
+% Use import if there are .tex files called from chapter1.tex (a table for instance) 
+\usepackage{import} 
+
+% include path for figures
+\graphicspath{{chapter1/figures_tables/}{chapter2/figures_tables}{chapter3/figures_tables}}
+
+\begin{document}
+\DeclareGraphicsExtensions{.jpg,.pdf,.mps,.png}
+\include{titlepage}
+% Optional thesis dedication
+\include{dedication}
+% Table of Contents, List of Tables and List of Figures
+\pdfbookmark[1]{TABLE OF CONTENTS}{table}
+\tableofcontents
+\addtocontents{toc}{\def\protect\@chapapp{}} \cleardoublepage \phantomsection
+\addcontentsline{toc}{chapter}{LIST OF TABLES}
+\listoftables
+\cleardoublepage \phantomsection \addcontentsline{toc}{chapter}{LIST OF FIGURES}
+\listoffigures
+% Comment out the next line if NOT using chaptertitle
+\addtocontents{toc}{\def\protect\@chapapp{CHAPTER\ }}
+
+
+
+\cleardoublepage \phantomsection \include{acknowlegements} % optional
+\cleardoublepage \phantomsection \include{abstract}        % optional
+
+
+
+\newpage
+\pagenumbering{arabic}
+
+\include{introduction}
+
+
+\chapter{THIS IS THE TITLE OF THE FIRST PAPER}
+\paperinfo{published in the Journal of ABC} % only include if paper has been submitted
+\paperauthor{Jane Smith and Jesse Adams}    % only include if paper has been submitted
+\import{chapter1/}{chapter1}
+%\include{chapter1Template/chapter1} 
+
+\chapter{THIS IS THE TITLE OF THE SECOND PAPER}
+\import{chapter2/}{chapter2}
+
+\chapter{THIS IS THE TITLE OF THE THIRD PAPER}
+\import{chapter3/}{chapter3}
+
+\appendixtitle 
+\appendix
+\include{appendix1}
+\include{appendix2}
+
+
+\renewcommand{\bibname}{\centerline{BIBLIOGRAPHY}}
+\unappendixtitle
+\newpage
+\phantomsection
+\addcontentsline{toc}{chapter}{BIBLIOGRAPHY}
+\bibliography{mybib}
+
+\end{document}
