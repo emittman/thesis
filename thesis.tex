@@ -1,7 +1,7 @@
 % Template file for a standard thesis
 \documentclass[11pt]{isuthesis}
 \usepackage[pdftex]{graphicx}
-\usepackage{amsmath, amsfonts}
+\usepackage{amsmath, amsfonts, bm}
 
 % Standard, old-style thesis
 \usepackage{isutraditional}   \chaptertitle
@@ -18,6 +18,12 @@
 
 % Include optional material with iftoggle{thesis}
 \usepackage{etoolbox}
+
+% Required by different chapters
+\usepackage{pseudocode}
+\usepackage{blkarray}
+\usepackage{subcaption}
+\usepackage{booktabs}
 
 %Optional Package to add PDF bookmarks and hypertext links
 \usepackage[pdftex,hypertexnames=false,linktocpage=true]{hyperref}
@@ -59,23 +65,25 @@
 
 \include{introduction}
 
+\chapter{A GPU accelerated nonparametric shrinkage
+model for high-dimensional data}
+\import{chapter2/}{chapter2}
 
-\chapter{THIS IS THE TITLE OF THE FIRST PAPER}
-\paperinfo{published in the Journal of ABC} % only include if paper has been submitted
-\paperauthor{Jane Smith and Jesse Adams}    % only include if paper has been submitted
+\chapter{A Bayesian nonparametric analysis of
+RNA-seq gene expression data}
 \import{chapter1/}{chapter1}
 %\include{chapter1Template/chapter1} 
 
-\chapter{THIS IS THE TITLE OF THE SECOND PAPER}
-\import{chapter2/}{chapter2}
-
-\chapter{THIS IS THE TITLE OF THE THIRD PAPER}
+\chapter{A hierarchical failure-time model for observational data exhibiting infant-mortality and wearout failure modes.}
+\paperinfo{submitted to the Annals of Applied Statistics} % only include if paper has been submitted
+\paperauthor{Eric Mittman, Colin Lewis-Beck and William Q. Meeker}    % only include if paper has been submitted
 \import{chapter3/}{chapter3}
 
-\appendixtitle 
+\appendixtitle
 \appendix
-\include{appendix1}
-\include{appendix2}
+\include{appendix_computation}
+\include{appendix_reliability}
+% \include{chapter3/appendix}
 
 
 \renewcommand{\bibname}{\centerline{BIBLIOGRAPHY}}
