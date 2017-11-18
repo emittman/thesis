@@ -1,0 +1,19 @@
+\chapter{Summary and conclusion}
+
+We have presented two new applications of Bayesian hierarchical models and our implementations of them, demonstrating both their advantages and their practicality.
+
+Our nonparametric Bayesian model for gene expression was in response to the observation that Bayesian models in use today rely on shrinkage priors that, in some instances, are falsified by the data. That this is true is not surprising. For instance, in a complex experiment, we doubt it reasonable to assume that the true effect sizes within a gene are independent; while it may represent our prior knowledge, we would like to be able update our knowledge after observing many, many genes. Bayesian nonparametrics addresses a problem in parametric statistics, that, even in a parametric hierarchical model, where the hyperparameters are learned from the data, the assumption of a particular parametric family is a strong one, and one that can potentially lead to posteriors which are inconsistent with the underlying truth.
+
+By modeling the effects as a Dirichlet process, we can make minimal assumptions about the distribution of the gene-by-gene effects. Comparisions of the results of our analysis to competing methods show significant differences in the conclusions that we would tend to draw from the two approaches. We think this is largely due to the small sample sizes we considered, where the number of samples per regression paraameter within a gene was $\le 4$. We expect that as sample sizes increase the difference between methods would become negligible. Through experimentation and our simulation studies which we presented in Chapter 3, we expect that the relative performance of our BNP method will depend on the unknown true distributions in a particular experiment. In Simulation Study 1, the ``truth" was constructed using BNP posterior draws and BNP had a substantial advantage in our assessments of thresholded log-fold change. For Simulation Study 2, where the ``truth" was based on voom-limma point estimates, the advantage of BNP was less clear.
+
+A disadvantage of our BNP method is that inference for $\mathcal{P}$ messy, consisting of thousands of weakly identified parameters. This makes it difficult to understand the reasons for the multimodal posterior we observed for certain genes, for example. A different approach which we considered, but did not pursue, would be to model $\mathcal{P}$ as a Dirichlet process mixture. Replacing
+\begin{equation*}
+(\beta_g^\top,\sigma^2_g) \sim \mathcal{P},\quad \mathcal{P} \sim \op{DP}(\alpha Q)
+\end{equation*}
+with
+\begin{equation*}
+(\beta_g^\top,\log \sigma_g) \sim \op{MVN}(\mu_g, \Sigma_g),\quad (\mu_g,\Sigma_g) \sim \mathcal{Q},\quad \mathcal{Q} \sim \op{DP}(\alpha R).
+\end{equation*}
+Effectively, this replaces what was an infinite discrete mixture with an infinite mixture of multivariate normals. It seems that such a modification should reduce the required number of mixture components by orders of magnitude and thus produce a more parsimonious model fit with smoother and more accountable patterns of shrinkage. We can forsee challenges arising in the implementation of this model; for example, it may be difficult to select an good base measure for $\Sigma_g$.
+
+In the second application in Chapter 4, we modeled the parameters describing the lifetime of various hard-drive models hierarchically, assuming independent parametric priors. In this application, the main challenge was to 

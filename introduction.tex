@@ -4,46 +4,44 @@ The rapid progress in computational technologies has made feasible general compu
 
 This dissertation consists of three papers relating to two new applications of hierarchical models. In Chapter 2, we consider the feasibility of a flexible Bayesian nonparametric hierarchical model for gene expression data. Recent innovations in high-throughput RNA sequencing have made it possible to measure, within a single sample, the relative expression of tens of thousands of genes simultaneously. Many researchers are looking to use such gene expression data to learn which genes may be involved in biological phenomena. Because, typical studies are limited in the number of samples they can afford to sequence, the statistical power for detecting differences between experimental groups tends to be quite low. Hierarchical modeling is useful in this context because it provides a mechanism by which partial pooling of information stabilizes estimation of differences and while reducing the rate of false detection while not depending strongly on tuning parameters. Popular methods use hierarchical models, but make unrealistic assumptions, which in some cases could lead to inefficient partial pooling of information. We propose a Bayesian nonparametric approach that avoids these assumptions and implement a Gibbs sampler on a GPU which allows posterior inference to be computationally feasible.
 
-In Chapter 3, we apply our model from Chapter 2 to an experimental data set by Paschold et al. (2012), where key questions centered on the ordering of mean expression among four varieties of maize, two different inbred varieties and the two hybrids crosses. We conduct two simulation studies, both of which show that the new method produces estimates that are substantially closer to the truth, on average, than all competing methods that we considered. We also used these studies to study the accuracy in ranking genes according with respect to a hypothesis; we found that the new method was at least as accurate as competing methods. An additional benefit of our approach is it is able to directly assess the probability of a particular ordering of expression levels because we sample jointly from the full posterior. We find that this method acheives a greater degree of shrinkage than similar parametric approaches and that the pattern of shrinkage respects local patterns in the data which may represent relevant biological processes.
+In Chapter 3, we apply our model from Chapter 2 to an experimental data set by \citet{paschold}, where key questions centered on the ordering of mean expression among four varieties of maize, two different inbred varieties and the two hybrids crosses. We conduct two simulation studies, both of which show that the new method produces estimates that are substantially closer to the truth, on average, than all competing methods that we considered. We also used these studies to study the accuracy in ranking genes according with respect to a hypothesis; we found that the new method was at least as accurate as competing methods. An additional benefit of our approach is it is able to directly assess the probability of a particular ordering of expression levels because we sample jointly from the full posterior. We find that this method acheives a greater degree of shrinkage than similar parametric approaches and that the pattern of shrinkage respects local patterns in the data which may represent relevant biological processes.
 
-Chapter 4 considers the problem of modeling failure data for multiple populations where the failures exhibit multimodality and where much of the data is truncated and/or censored. Hierarchical modeling can help here because, by borrowing information across groups, we can more accurately assess uncertainty and also produce full inference for groups with very limited data. To deal with the multimodality, we present a hierarchical version of the generalized limited failure population model of REF. We demonstrate fitting this model on a fairly large data set consisting of lifetime information on HOW MANY hard drives, grouped by drive-model into 44 drive-models.
+Chapter 4 considers the problem of modeling failure data for multiple populations where the failures exhibit multimodality and where much of the data is truncated and/or censored. Hierarchical modeling can help here because, by borrowing information across groups, we can more accurately assess uncertainty and also produce full inference for groups with very limited data. To deal with the multimodality, we present a hierarchical version of the generalized limited failure population model of \citet{chan}. We demonstrate fitting this model on a fairly large data set consisting of lifetime information on over 75,000 hard drives, representing 44 different drive-models. Here we illustrate the flexibility afforded by the Bayesian approach using posterior samples, obtained using \citet{stan}, to perform model selection, model assessment, estimation and prediction.
 
+Finally, in Chapter 5, I summarize our main findings and consider potential modifications or improvements to what we have done and suggest directions for future work.
 
-
-
-
-Here initial concepts and conditions are explained and
-several hypothesis are mentioned in brief.
-
-\subsection{Hypothesis}
-
-Here one particular hypothesis is explained in depth
-and is examined in the light of current literature.
-
-\subsubsection{Parts of the hypothesis}
-
-Here one particular part of the hypothesis that is 
-currently being explained is examined and particular
-elements of that part are given careful scrutiny.
-
-% Below \subsubsection
-% Sectional commands: \paragraph and \subparagraph may also be used
-
-\subsection{Second Hypothesis}
-
-Here one particular hypothesis is explained in depth
-and is examined in the light of current literature.
-
-\subsubsection{Parts of the second hypothesis}
-
-Here one particular part of the hypothesis that is 
-currently being explained is examined and particular
-elements of that part are given careful scrutiny.
-
-\section{Criteria Review}
-
-Here certain criteria are explained thus eventually
-leading to a foregone conclusion.
+% Here initial concepts and conditions are explained and
+% several hypothesis are mentioned in brief.
+% 
+% \subsection{Hypothesis}
+% 
+% Here one particular hypothesis is explained in depth
+% and is examined in the light of current literature.
+% 
+% \subsubsection{Parts of the hypothesis}
+% 
+% Here one particular part of the hypothesis that is 
+% currently being explained is examined and particular
+% elements of that part are given careful scrutiny.
+% 
+% % Below \subsubsection
+% % Sectional commands: \paragraph and \subparagraph may also be used
+% 
+% \subsection{Second Hypothesis}
+% 
+% Here one particular hypothesis is explained in depth
+% and is examined in the light of current literature.
+% 
+% \subsubsection{Parts of the second hypothesis}
+% 
+% Here one particular part of the hypothesis that is 
+% currently being explained is examined and particular
+% elements of that part are given careful scrutiny.
+% 
+% \section{Criteria Review}
+% 
+% Here certain criteria are explained thus eventually
+% leading to a foregone conclusion.
 
 
 

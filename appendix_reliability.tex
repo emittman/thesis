@@ -6,7 +6,7 @@ We first start with a nonparametric estimate of the empirical cdf for each drive
 $\widehat{F_g(t)}_{KM}$, is conditional on survival up to
 $t_{g,\text{min}}^L$, the shortest reported running time of all units
 of drive-model $g$ for which records are available. To produce
-unconditional estimates, we adapt the adjustment method outlined by \citet[Chapter 11]{meeker}.  For each drive-model we select
+unconditional estimates, we adapt the adjustment method outlined by \citet{meeker} (Chapter 11).  For each drive-model we select
 $t_{g,\text{min}}^L$, the smallest left truncated time in the sample.
 By sampling from the full posterior distribution, since
 $\Pr(T>t_{g,\text{min}}^L|\theta_g)$ (the probability a hard drive has
@@ -20,10 +20,10 @@ While this adjustment is negligible for the majority of drive-models, five drive
 
 \section*{Definition of global average for Model 4}
 \label{global-avg}
-In Section \ref{model-assessment}, to illustrate the concept of shrinkage in our hierarchical model, we refer to a ``global average" which represents an average GLFP cdf for the entire population, $\op{H}\left(\cdot|\bar{\pi},\mu_1,\sigma_1,\bar{\mu}_2,\bar{\sigma}_2\right)$. Since $\mu_1$ and $\sigma_1$ are shared across drive-models, these can already be interpreted as ``global". For the parameters that vary across drive models, we select values corresponding to the medians of the hierarchical distributions (\ref{eq:hier-model}) conditional on the hyperparameters. In particular, we set
+In Section \ref{model-assessment}, to illustrate the concept of shrinkage in our hierarchical model, we refer to a ``global average" which represents an average GLFP cdf for the entire population, $\op{H}(\cdot|\bar{\pi},\mu_1,\sigma_1,\bar{\mu}_2,\bar{\sigma}_2)$. Since $\mu_1$ and $\sigma_1$ are shared across drive-models, these can already be interpreted as ``global". For the parameters that vary across drive models, we select values corresponding to the medians of the hierarchical distributions (\ref{eq:hier-model}) conditional on the hyperparameters. In particular, we set
 $$\bar{\pi}=\op{logit}^{-1}(\eta_{\pi}),\;\bar{\mu}_2=\eta_{t_2} - m_{\sigma_2}\Phi^{-1}(.2) \mbox{ and } \bar{\sigma}_2= m_{\sigma_2}.$$
 Let $J(\cdot|a,b),\;J^{-1}(\cdot|a,b)$ denote the cdf and inverse cdf, respectively, for a log-normal distribution with log-location parameter $a$ and log-scale parameter $b$. Then
 $$m_{\sigma_2}=J^{-1}[0.5 \cdot J(1|\eta_{\sigma_2},\tau_{\sigma_2})|\eta_{\sigma_2}, \tau_{\sigma_2}],$$
 which is the median of a log-normal distribution with parameters $\eta_{\sigma_2}$, and $\tau_{\sigma_2}$, truncated to the interval $(0, 1)$.
 
-We estimate the global average pointwise, using draws from the joint posterior distribution, $H\left(\tilde{t}|\eta_\pi^{(s)}, \mu_1^{(s)}, \sigma_1^{(s)}, \eta_{t_2}^{(s)},\eta_{\sigma_2}^{(s)},\tau_{\sigma_2}^{(s)}\right)$, $s=1,2,\ldots,S$. The computation is thus similar to that shown in (\ref{pointwise-medians}).
+We use posterior draws, $H(\tilde{t}|\eta_\pi^{(s)}, \mu_1^{(s)}, \sigma_1^{(s)}, \eta_{t_2}^{(s)},\eta_{\sigma_2}^{(s)},\tau_{\sigma_2}^{(s)})$, $s=1,2,\ldots,S$ to estimate the global average pointwise, . This computation is similar to that shown in (\ref{pointwise-medians}).

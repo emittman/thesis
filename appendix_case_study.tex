@@ -1,0 +1,64 @@
+\chapter{ADDITIONAL MATERIAL FOR CHAPTER 3}
+
+\section*{Derivation of full conditionals}
+\small
+\paragraph{Cluster allocation parameters, $\zeta_g$}
+\begin{align*}
+p(\zeta_g|\cdot) & = p(\zeta_g|y_g, \tilde{\beta}, \tilde{\sigma}^2, \pi)\\
+                 & \propto  p(\zeta_g|\pi)\; p(y_g|\zeta_g, \tilde{\beta}, \tilde{\sigma}^2)\\
+                 & \propto  \sum_{k=1}^K \left[ \pi_k \bm{1}(\zeta_g=k)\right] p(y_g|\zeta_g,\tilde{\beta},\tilde{\sigma}^2)\\
+                & \propto \sum_{k=1}^K \left\{ \pi_k \bm{1}(\zeta_g=k)  \tilde{\sigma}_k^{-N} |W_g|^{1/2} \exp \left[ -\frac{1}{2\tilde{\sigma}^2_k} \left( y_g - X\tilde{\beta}_k \right)^\top W_g \left( y_g - X\tilde{\beta}_k \right) \right]\right\}\\
+\implies Pr(\zeta_g=k) & = \frac{\pi_k \tilde{\sigma}_k^{-N} |W_g|^{1/2} \exp \left[ -\frac{1}{2\tilde{\sigma}^2_k} \left( y_g - X\tilde{\beta}_k \right)^\top W_g \left( y_g - X\tilde{\beta}_k \right) \right]}{\sum_{k=1}^K \pi_k \tilde{\sigma}_k^{-N} |W_g|^{1/2} \exp \left[ 1\frac{1}{2\tilde{\sigma}^2_k} \left( y_g - X\tilde{\beta}_k \right)^\top W_g \left( y_g - X\tilde{\beta}_k \right) \right]}
+\end{align*}
+
+Thus, $\zeta_g \ind \op{Categorical}(\hat{\pi}_{g1},\ldots,\hat{\pi}_{gK})$ where
+\begin{equation*}
+\hat{\pi}_{gK} = \frac{\pi_k \tilde{\sigma}_k^{-N} |W_g|^{1/2} \exp \left\{ -\frac{1}{2\tilde{\sigma}^2_k} \left( y_g - X\tilde{\beta}_k \right)^\top W_g \left( y_g - X\tilde{\beta}_k \right) \right\}}{\sum_{k=1}^K \pi_k \tilde{\sigma}_k^{-N} |W_g|^{1/2} \exp \left\{ 1\frac{1}{2\tilde{\sigma}^2_k} \left( y_g - X\tilde{\beta}_k \right)^\top W_g \left( y_g - X\tilde{\beta}_k \right) \right\}}.
+\end{equation*}
+
+\paragraph{Cluster mean parameters, $\tilde{\beta}_k$}
+\begin{align*}
+p(\tilde{\beta}_k|\cdot) & = p(\tilde{\beta}_k|y, \zeta, \tilde{\sigma}_k)\\
+                         & \propto \prod_{g:\zeta_g=k} \left[p(y_g|\tilde{\beta}_k, \tilde{\sigma}_k)\right]\; p(\tilde{\beta}_k)\\
+                         & \propto \prod_{g:\zeta_g=k}  \left\{ \exp \left[ -\frac{1}{2\tilde{\sigma}^2_k} \left( y_g - X\tilde{\beta}_k \right)^\top W_g \left( y_g - X\tilde{\beta}_k \right) \right]\right\}\\
+                         & \quad \cdot \exp \left[ -\frac{1}{2}\left(\tilde{\beta}_k-m\right)^\top C^{-1} \left( \tilde{\beta}_k-m\right)\right]\\
+                         & \propto \exp \left[ -\frac{1}{2} \tilde{\beta}_k^\top \left( \tilde{\sigma}^{-2}_k \sum_{\zeta_g=k} X^\top W_g X + C^{-1} \right) \tilde{\beta}_k - 2 \left( \tilde{\sigma}_k^{-2} \sum_{\zeta_g=k} X^\top W_g y_g + C^{-1} m \right)\tilde{\beta}_k \right]
+\end{align*}
+This is proportional to a multivariate normal density.
+Thus, $\tilde{\beta}_k \ind \op{MVN}(\hat{m}_k,\hat{C}_k)$ where
+\begin{equation*}
+\hat{C}_k = \left( \tilde{\sigma}^{-2}_k \sum_{\zeta_g=k} X^\top W_g X + C^{-1} \right)^{-1} \quad %
+\mbox{and} \quad \hat{m}_k = \hat{C}_k  \left( \tilde{\sigma}_k^{-2} \sum_{\zeta_g=k} X^\top W_g y_g + C^{-1} m \right).
+\end{equation*}
+
+\paragraph{Cluster variance parameters, $\tilde{\sigma}^2_k$}
+\begin{align*}
+p(\tilde{\sigma}^2_k|\cdot) & = p(\tilde{\sigma}^2_k|y, \zeta, \tilde{\beta}_k) \\
+                            & \propto \prod_{g:\zeta_g=k} \left[ p(y_g|\tilde{\beta}_k, \tilde{\sigma}_k)\right]\; p(\tilde{\sigma}^2_k)\\
+                            & \propto \prod_{g:\zeta_g=k}  \left\{ \tilde{\sigma}_k^{-N} \exp \left[ -\frac{1}{2\tilde{\sigma}^2_k} \left( y_g - X\tilde{\beta}_k \right)^\top W_g \left( y_g - X\tilde{\beta}_k \right) \right]\right\}\\
+                            & \quad \cdot (\tilde{\sigma}_k^2)^{-(a_{\sigma^2}+1)} \exp\left(-b_{\sigma^2}/\tilde{\sigma}^2_k\right)\\
+                            & \propto (\tilde{\sigma}_k^2)^{-(a_{\sigma^2} + \frac{1}{2}N\cdot M_k + 1)} \exp \left[ -\tilde{\sigma}_k^{-2} \left( b_{\sigma^2} + \frac{1}{2} \sum_{g:\zeta_g=k} \left( y_g - X\tilde{\beta}_k \right)^\top W_g \left( y_g - X\tilde{\beta}_k \right) \right) \right],
+\end{align*}
+where $M_k = \sum_{g=1}^G \bm{1}(\zeta_g=k)$.
+Thus, $\tilde{\sigma}^2_k \ind \op{Inverse-Gamma}(\hat{a}_k, \hat{b}_k)$ where
+\begin{equation*}
+\hat{a}_k=a_{\sigma^2} + \frac{1}{2}N\cdot M_k \quad \mbox{and} \quad \hat{b}_k=b_{\sigma^2} + \frac{1}{2} \sum_{g:\zeta_g=k} \left( y_g - X\tilde{\beta}_k \right)^\top W_g \left( y_g - X\tilde{\beta}_k \right).
+\end{equation*}
+
+\paragraph{Cluster stick-breaking weights, $\nu$}
+\begin{align*}
+p(\nu|\cdot) & = p(\nu|\zeta,\alpha) \propto p(\zeta|\nu) p(\nu|\alpha)\\
+& \propto \prod_{g=1}^G \left[ \nu_{\zeta_g} \prod_{l<\zeta_g}(1-\nu_l) \right] \prod_{k=1}^{K-1} \nu_k(1-\nu_k)^\alpha\\
+& = \prod_{k=1}^{K-1} \nu_k^{M_k+1}(\nu_k^{T_k+\alpha}),
+\end{align*}
+where $T_k = \sum_{l>k}\left[\sum_{g=1}^G\bm{1}(\zeta_g=l)\right]$.
+Thus, $\nu_k \ind \op{Beta}\left(M_k+1, T_k+\alpha\right)$.
+
+\paragraph{Concentration parameter, $\alpha$}
+\begin{align*}
+p(\alpha|\cdot) & = p(\alpha|\nu) \propto p(\nu|\alpha)\;p(\alpha)\\
+& \propto \prod_{k=1}^{K-1} \left[\alpha (1-\nu_k)^\alpha \right]\;p(\alpha)\\
+& = \alpha^{K-1} \pi_K^\alpha\; \cdot \; \alpha^{a_\alpha - 1} \exp(-\alpha b_\alpha)\\
+& = \alpha^{a_\alpha + K - 2} \exp\left\{-\alpha \left[ b_\alpha - \log(\pi_K)\right]\right\}. 
+\end{align*}
+Thus, $\alpha \sim \op{Gamma}(a_\alpha + K - 1, b_\alpha - \log \pi_K)$.
