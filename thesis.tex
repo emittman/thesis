@@ -21,7 +21,7 @@
 
 % Required by different chapters
 \usepackage{pseudocode} %ch 2
-\usepackage{blkarray} %ch 2
+\usepackage{blkarray} %ch 2,3
 \usepackage{subcaption} %ch 4
 \usepackage{booktabs} %ch 3
 \usepackage{multirow} %ch 3
@@ -75,18 +75,22 @@ model for high-dimensional data}
 \import{chapter1/}{chapter1}
 
 \chapter{A hierarchical failure-time model for observational data exhibiting infant-mortality and wearout failure modes.}
-\paperinfo{submitted to the Annals of Applied Statistics} % only include if paper has been submitted
-\paperauthor{Eric Mittman, Colin Lewis-Beck and William Q. Meeker}    % only include if paper has been submitted
+% \paperinfo{submitted to the Annals of Applied Statistics} % only include if paper has been submitted
+% \paperauthor{Eric Mittman, Colin Lewis-Beck and William Q. Meeker}    % only include if paper has been submitted
 \import{chapter3/}{chapter3}
 
 \include{conclusion}
-
 \appendixtitle
 \appendix
-\include{appendix_computation}
-\include{appendix_case_study}
-\include{appendix_reliability}
 
+\chapter{Use of CUDA libraries in implementation of BNP Gibbs sampler}
+\import{}{appendix_computation}
+
+\chapter{Derivations of full conditionals for the BNP Gibbs sampler}
+\import{}{appendix_case_study}
+
+\chapter{Definitions used in hierarchical GLFP methodology}
+\import{}{appendix_reliability}
 
 \renewcommand{\bibname}{\centerline{BIBLIOGRAPHY}}
 \unappendixtitle
