@@ -1,0 +1,843 @@
+\documentclass{beamer}
+\includeonlyframes{current}
+\setbeamertemplate{navigation symbols}{}
+
+\title{Bayesian nonparametric model for gene expression}
+\author{Eric Mittman \\ \vspace{.5cm} Advisor: Jarad Niemi}
+
+%includes
+\usepackage{amsmath, bbm}
+\usepackage{graphicx}
+\usepackage{natbib}
+% \usepackage{tikz}
+% %include tikz
+% \usepackage{tikzscale}
+% \usetikzlibrary{arrows,decorations.pathmorphing,backgrounds,matrix,positioning,fit,petri, external}
+\usepackage{booktabs}
+\usepackage{multirow}
+%\tikzexternalize[prefix=tikz/]
+
+%theme
+\usetheme{Dresden}
+\usefonttheme[onlymath]{serif}
+
+%colors
+% Custom colors
+\usepackage{xcolor}
+\definecolor{gold}{HTML}{F1BE48}
+\definecolor{red}{HTML}{C8102E}
+\setbeamercolor{upcol}{fg=black,bg=red}
+\setbeamercolor{lowcol}{fg=black,bg=gold!40}
+\usecolortheme[named=red]{structure}
+
+%macros
+\newcommand{\mc}{\mathcal}
+\newcommand{\mb}{\mathbb}
+\newcommand{\op}{\operatorname}
+\newcommand{\ind}{\stackrel{ind}{\sim}}
+\newcommand{\iid}{\stackrel{ind}{\sim}}
+
+\AtBeginSection[]{
+  \begin{frame}
+  \vfill
+  \centering
+  \begin{beamercolorbox}[sep=8pt,center,shadow=true,rounded=true]{title}
+  \usebeamerfont{title}\secname\par%
+  \end{beamercolorbox}
+  \vfill
+  \end{frame}
+}
+
+\graphicspath{{../chapter1/figures_tables/}{../chapter2/figures_tables/}{../chapter3/figures_tables/}}
+
+\begin{document}
+
+
+\frame{\titlepage}
+
+% \begin{frame}
+% \frametitle{Table of Contents}
+% \tableofcontents
+% \end{frame}
+
+%%% Section 0: Data problem
+\begin{frame}[label=current]
+\frametitle{Acknowledgment}
+This research was supported by National Institute of General Medical Sciences (NIGMS) of the National Institutes of Health and the joint National Science Foundation / NIGMS Mathematical Biology Program under award number R01GM109458. The content is solely the responsibility of the authors and does not necessarily represent the official views of the National Institutes of Health or the National Science Foundation.
+\end{frame}
+
+\section[Gene Expr.]{Gene expression profiling}
+
+\begin{frame}[label=current]
+\frametitle{Gene expression}
+{\scriptsize \citep[\textit{Statistical Analysis of Next Generation Sequencing Data}]{datta2014}}
+\begin{itemize}
+\pause\item DNA encodes all biological information
+\pause\item regions of DNA (genes) encode blueprints for proteins
+\pause\item messenger RNA (mRNA) conveys information to ribosomes
+\pause\item ribosomes assemble proteins
+\end{itemize}
+\pause Gene expression is regulated by mRNA.
+\end{frame}
+
+\begin{frame}[label=current]
+\frametitle{Gene expression profiling - RNA-seq}
+\pause RNA-seq is:
+\vspace{.5cm}
+\begin{itemize}
+\pause \item "whole genome shotgun sequencing"
+\pause \item simultaneously measurement of transcript abundance of thousands of genes at once
+\pause \item ... at single-base resolution
+\end{itemize}
+
+\vspace{.5cm}
+Steps to producing RNA-seq data:
+\vspace{.5cm}
+\begin{itemize}
+\pause \item isolate mRNA and fragment it
+\pause \item match fragments back to genes/features (counts)
+\end{itemize}
+\end{frame}
+
+\begin{frame}[label=current]
+\frametitle{Motivating example}
+\begin{beamerboxesrounded}[upper=upcol,lower=lowcol,shadow=true]{Heterosis}
+\begin{itemize}
+\item ``Hybrid vigor"
+\pause \item Larger offspring than parents
+\pause \item Complementation
+\pause \item High parent heterosis (HPH) $LP < HP < H$
+\pause \item Low parent heterosis (LPH) $H < LP < HP $
+\end{itemize}
+\end{beamerboxesrounded}
+\end{frame}
+
+\begin{frame}[label=current]
+\frametitle{RNA-seq data}
+
+% latex table generated in R 3.4.2 by xtable 1.8-2 package
+% Fri Dec 01 15:02:44 2017
+\begin{table}[ht]
+\scalebox{.7}{
+\centering
+\begin{tabular}{crrrrrr}
+  \toprule
+& \multicolumn{3}{c}{Population 1} & \multicolumn{3}{c}{Population 2} \\
+  \midrule
+& Sample 1 & Sample 2 & Sample 3 & Sample 1 & Sample 2 & Sample 3 \\ 
+  \midrule
+Gene 1 &    7 & 2 & 0 & 14 & 18 & 41 \\ 
+Gene 2 &   55 & 42 & 40 & 32 & 22 & 37 \\ 
+Gene 3 &   41 & 40 & 32 & 61 & 61 & 60 \\ 
+Gene 4 &   40 & 43 & 35 & 15 & 24 & 39 \\
+\midrule
+raw library size  &11569434 & 10079799 & 9028465 & 10028258 & 9010306 & 10283594 \\ 
+   \bottomrule
+\end{tabular}
+}
+\end{table}
+\end{frame}
+
+\begin{frame}[label=current]
+\frametitle{Data from \citet{paschold}}
+Research goal: To use gene expression data to identify genes responsible for hybrid vigor (heterosis).
+
+\pause\begin{beamerboxesrounded}[upper=upcol,lower=lowcol,shadow=true]{}
+\begin{itemize}
+\item 2 recombinant inbred lines (homozygous): B73, Mo17
+\item 2 reciprocal hybrid crosses: B73$\times$Mo17, Mo17$\times$B73
+\item 4 replicates of each variety
+\item sequencing done on 2 flow cells, replicates balanced across flow cells
+\end{itemize}
+\end{beamerboxesrounded}
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%
+\section[Model]{Bayesian nonparametric model}
+
+\begin{frame}[label=current]
+\frametitle{Normalization}
+\scalebox{.8}{
+  \begin{beamerboxesrounded}[upper=upcol,lower=lowcol,shadow=true]{Definitions}
+  \[r_{gn} = \mbox{count for gene }g \mbox{, sample }n;\quad g=1,\ldots,G,\quad n=1,\ldots,N\]
+  \[R_n = \mbox{library size for sample }n\]
+  \[\log \tilde{R} = \frac{1}{N}\sum_{n=1}^N \log(R_n)\]
+  \[y_{gn} = \log_2 \left(\frac{r_{gn}+0.5}{R_n+1}\times 10^6\right)\]
+  \[\tilde{r}_g = \frac{1}{N}\sum_{n=1}^N y_{gn} + \log_2(\tilde{R}) - \log_2(10^6)\]
+  \[X = \mbox{model matrix}\]
+  \[s_g = \sqrt{MSE}\mbox{ from fitting a linear model, }y_g \sim N(X\beta_g, \sigma^2_gI_{n\timesn})\]
+  \end{beamerboxesrounded}
+}
+\end{frame}
+
+\begin{frame}[label=current]
+\frametitle{Mean-variance in RNA-seq}
+\includegraphics[width=\textwidth]{voom1}
+\end{frame}
+
+\begin{frame}
+\frametitle{Variance modeling at the observation level (voom)}
+\includegraphics[width=\textwidth]{voom1}
+\end{frame}
+
+\begin{frame}
+\frametitle{example - voom}
+\end{frame}
+
+\begin{frame}
+\frametitle{Model matrix}
+\end{frame}
+
+\begin{frame}
+\frametitle{Gene-specific parameters}
+\end{frame}
+\section{Model}
+
+\begin{frame}
+\frametitle{example - scenario}
+\end{frame}
+
+\begin{frame}
+\frametitle{example - hierarchical models}
+\end{frame}
+
+\begin{frame}
+\frametitle{example - posterior predictive}
+\end{frame}
+
+\subsection{example - posterior predictive}
+\begin{frame}
+\centering
+\includegraphics[height=\textheight]{toy_ex/predictive.pdf}
+\end{frame}
+
+\begin{frame}
+\includegraphics[width=\textwidth]{toy_ex/precision.pdf}
+\end{frame}
+
+\begin{frame}
+\frametitle{BNP model}
+\end{frame}
+
+\begin{frame}
+\frametitle{interpretation of $\alpha$}
+\end{frame}
+
+\begin{frame}
+\frametitle{choice of $Q$}
+\end{frame}
+
+\begin{frame}
+\frametitle{Gibbs sampler 1}
+\end{frame}
+
+\begin{frame}
+\frametitle{Gibbs sampler 2}
+\end{frame}
+
+\begin{frame}
+\frametitle{Computational feasibility}
+\end{frame}
+
+\begin{frame}
+\frametitle{Running time}
+\end{frame}
+
+\section{Case study - heterosis in maize}
+
+
+\begin{frame}
+\frametitle{RNA-seq data}
+
+Important features:
+  
+  \begin{itemize}
+\item Measures associated with gene expression
+\item Counts of transcripts (reads) which have been mapped to genes
+\item Some variability due to sequencing process (sequencing depth, lane effects)
+\item Multiple samples can be processed simultaneously
+\item Typically tens of thousands of genes
+\item Sample sizes tend to be limited by cost
+
+\end{itemize}
+\vspace{1cm}
+{\small \citep{datta2014}}
+\end{frame}
+
+% \begin{frame}
+% \frametitle{Maize RNA-seq data}
+% \setkeys{Gin}{width=0.7\textwidth}
+
+% \begin{center}
+% \includegraphics{data}
+% {\tiny (Will Landau)}
+% \end{center}
+% \end{frame}
+
+\begin{frame}
+\frametitle{Model for gene expression}
+$y_{gn}$ is observed expression for gene/feature $g$, sample $n$; $y_{gn} \ge 0$.
+
+\[\log(y_{gn}+1) \ind \op{N}\left(x_{n}^\top\beta_g, \sigma^2_g\right) \]
+
+\begin{itemize}
+\item We choose to work with a transformed version of the data for convenience
+
+\item May be preferable to model the counts directly (later)
+\end{itemize}
+\end{frame}
+
+% \begin{frame}
+% \frametitle{Inferential objectives}
+% We consider hypotheses of the form $H_g: c_j^\top \beta_g >0$ for all $j=1,\ldots, J$.
+% \pause
+% \small
+% Consider the following design matrix:\\
+% {\tiny
+%   \[\bordermatrix{
+%     & x_1 & x_2 & x_3 & x_4 \cr
+%     \mbox{B73} & 1 & -1 & 0 & 0  \cr
+%     \mbox{Mo17} & 1 & 1 & 0 & 0  \cr
+%     \mbox{B73 x Mo17} & 1 & 0 & 1 & -1 \cr
+%     \mbox{Mo17 x B73} & 1 & 0 & 1 & 1}\]
+% }
+% 
+% \begin{itemize}
+% \item $\mbox{B73} < \mbox{Mo17}$ which is simply \beta_2>0$ or $c_1^\top=\begin{pmatrix}0 & 1 & 0 & 0\end{pmatrix}$
+%   
+%   \item $\min \left\{ \mbox{Mo17 x B73}, \mbox{B73 x Mo17}\right\} > \max \left\{ \mbox{B73}, \mbox{Mo17} \right\}$\\
+% which is simply $\min \left\{ \beta_3 + \beta_4, \beta_3 - \beta_4 \right\} > | \beta_2 |$\\
+% or
+% {\tiny
+%   \[C^\top = \bordermatrix{
+%     & & & & \cr
+%     c_1 & 0 &-1 &1 &1 \cr
+%     c_2 & 0 &1  &1 &1 \cr
+%     c_3 & 0 &-1 &1 &-1 \cr
+%     c_4 & 0 &1  &1 &-1}\]
+% }
+% \end{itemize}
+% % Potential issues:\\
+% % \begin{itemize}
+% % \item Small sample size \only<2>{$\longrightarrow$ hierarchical modeling to pool information}
+% % \item Multiple testing
+% % \item Composite null hypotheses \only<2>{$\longrightarrow$ inferences based on joint posterior}
+% % \end{itemize}
+% 
+% \end{frame}
+
+% \begin{frame}{t}
+% \frametitle{Data from \cite{paschold2012}}
+% \begin{columns}[T]
+% \begin{column}[T]{.4\textwidth}
+% \begin{block}{}
+% \footnotesize
+% $\beta_1 = \mbox{ parental mean}$\\[.25cm]
+% $\beta_2 = \mbox{ parental half-difference}$\\[.25cm]
+% $\beta_3 = \mbox{ hybrid effect}$\\[.25cm]
+% $\beta_4 = \mbox{ hybrid half-difference}$
+%   \end{block}
+% \end{column}
+% 
+% \begin{column}[T]{.6\textwidth}
+% \resizebox{\textwidth}{!}{
+%   \includegraphics{glm_pairs}
+% }
+% \end{column}
+% \end{columns}
+% \end{frame}
+% 
+% %%%%%%% Section 1: Introduce problem
+% 
+% \begin{frame}
+% \frametitle{Hierarchical model}
+% As a means of sharing information across genes, consider a hierarchical model,
+% 
+% \[(\beta_g, \sigma^2_g) \ind \mc{P}\]
+% 
+% \begin{itemize}
+% \pause
+% \item \cite{ji2014}, \cite{niemi2015empirical} proposed empirical Bayes methods; estimating $\mc{P}$ from the data and fixing $\mc{P}$ at the estimated value
+% 
+% \pause
+% \item \cite{landau2016fully} used independent, unimodal hierarchical distributions for the components of $\beta_g$ and $\sigma^2$ and put priors on the hyperparameters
+% 
+% \pause
+% \item \cite{liu2015semi} proposed a semiparametric model for differential expression in the case of two genotypes, used a nonparametric prior distribution for the distribution of $\rho_g$, the log-fold change for gene $g$
+%   \end{itemize}
+% \end{frame}
+% 
+% \begin{frame}
+% \frametitle{Semiparametric model}
+% We propose:
+%   \[\mc{P} \sim \op{DP}(\alpha, Q)\]
+% \pause
+% Extending the approach of Liu 2015 to
+% \begin{itemize}
+% \item flexibly model the distribution of $\left( \beta_g,\sigma^2_g\right)$ (dependence, multimodality)
+% \end{itemize}
+% \pause
+% While adapting the approach of Landau 2016 to
+% \begin{itemize}
+% \item obtain posterior estimates of \\
+% $\op{Pr}(H_g|y) \approx \frac{1}{S} \sum_{s=1}^S \left[\prod_{j=1}^J 1\left(c_j^\top \beta_g^{(s)} >0 \right) \right]$
+%   
+%   \item maintain computational feasibility
+% 
+% \end{itemize}
+% \end{frame}
+% 
+% \begin{frame}
+% \frametitle{Model for gene expression}
+% $y_{gn}$ is observed expression for gene/feature $g$, variety/treatment $v$, replicate $i$; $y_{gn} > 0$.
+% 
+% \[y_{gn} | x_{n}^\top \beta_g, \sigma^2_g \ind \op{N}\left(x_{n}^\top\beta_g, \sigma^2_g\right) \]
+% \[(\beta_g, \sigma_g^2) | \mc{P} \iid \mc{P}\]
+% \[\mc{P} \sim DP(\alpha, Q)\]
+% \[Q=\op{N}(m, C) \times \op{IG}(a, b)\]
+% 
+% \end{frame}
+% 
+% 
+% 
+% % \begin{frame}
+% % \frametitle{Inferential objectives}
+% % Compute expectations based on $\op{p}(\beta | y)$, i.e. 
+% % 
+% % \[E_{\op{p}(\beta|y)}(h) = \int\;h(\beta)\;\op{p}(\beta | y) d\beta\]
+% % 
+% % Given MCMC samples, $\{\beta^{(i)}\}_{i=1}^{m}$, by SLLN
+% % 
+% % \[\op{lim}_{m\rightarrow \infty} \frac{1}{m}\sum_{i=1}^{m}h(\beta^{(i)}) \rightarrow E_{\op{p}(\beta|y)}(h)\]
+% % 
+% % Examples:
+%   % 
+% % \[h_1: \mb{R}^G \times \mb{R}^v \rightarrow \mb [0,1]^G, \quad h_1 = 1_{x_{g1}^\top \beta_g > x_{g2}^\top \beta_g} \]
+% % 
+% % \end{frame}
+% 
+% %%%%%%%% Section 2: Background
+% 
+% \section{Intro to DP}
+% \begin{frame}
+% \frametitle{Dirichlet processes}
+% Definition:
+%   
+%   Let $(\Omega, \mathcal{F}, \mc{Q})$ be a completely separable metric space with a probability measure $\mc{Q}$ and let $\alpha > 0$. If for any finite partition of $\Omega$, $\{B_n\}_{n=1}^{N}$,
+% 
+% \[\mc{P}(B_1), \mc{P}(B_2), ... , \mc{P}(B_N) \sim \op{Dirichlet} \left( \alpha\mc{Q}(B_1), \alpha\mc{Q}(B_2), ..., \alpha\mc{Q}(B_N) \right),\]
+% 
+% then $\mc{P} \sim \op{DP}(\alpha,\mc{Q})$.
+% 
+% \begin{itemize}
+% \item For measurable $A$, $\op{E}(\mc{P}(A)) = \mc{Q}(A),\; \op{Var}(\mc{P}(A)) = \mc{Q}(A)(1 - \mc{Q}(A))/(\alpha + 1)$
+%   
+%   \item $\mc{P}$ is almost surely discrete.\citep{ferguson1973}\\
+% 
+% \item
+% For $\mc{P}_0 \ll \mc{Q}$, $\op{DP}(\alpha, \mc{Q})$ puts positive probability on distributions arbitrarily close to $\mc{P}_0$ on arbitrary sets\citep{antoniak1974}.
+% \end{itemize}
+% \end{frame}
+% 
+% 
+% % \begin{frame}
+% % \frametitle{Posterior Distribution}
+% % 
+% % \citep{ferguson1973} Let
+% % 
+% % \[\mc{P} \sim \op{DP}(\alpha, \mc{Q}),\]
+% % 
+% % \[X_1, \ldots, X_n | \mc{P} \iid \mc{P}.\]
+% % 
+% % Then
+% % 
+% % \begin{equation}\label{posterior}
+% % \mc{Q}_n = \mc{P}|X_1,\ldots,X_n \sim \op{DP}(\alpha + n, \frac{\alpha}{\alpha+n}\mc{Q} + \frac{1}{\alpha+n}\sum_{i=1}^{n} \delta_{X_i})
+% % \end{equation}
+% % \cite{blackmac1973} proved that $\mc{Q}_n$ converges to $\mc{P}$ almost surely.
+% % 
+% % \end{frame}
+% 
+% \begin{frame}
+% \frametitle{DP mixture model}
+% A Dirichlet process mixture model is
+% 
+% \[y_g|\theta_g \ind f_{\theta_g}\]
+% \[\theta_g|\mc{P} \iid \mc{P}\]
+% \[\mc{P} \sim \op{DP}(\alpha,\mc{Q})\]
+% 
+% Here, inference for $\mc{P}$ depends on $\{S_1, S_2, \ldots, S_K\}$, where $S_k = \{g:\theta_g=\theta^*_k\}$, i.e. a random partition of the data into clusters sharing a common parameter.\\
+% 
+% This is a mixture model with an unknown (potentially infinite) number of components.
+% 
+% \end{frame}
+% 
+% 
+% 
+% 
+% %%%% Paper 1
+% \section{Computation}
+% 
+% \begin{frame}
+% \frametitle{Existing software}
+% \begin{itemize}
+% \item {\tt DPpackage} \citep{jara2011}
+% \begin{itemize}
+% \item Implements (generalized) linear mixed effects models with $\op{DP}$ random effects
+% \item Had problem with large data sets, unable to diagnose source of problem
+% \item Has not been maintained
+% \item Does not implement our model exactly
+% \end{itemize}
+% 
+% \item {\tt Stan} Does not support discrete valued parameters
+% 
+% \item {\tt JAGS} Probably too slow (did not try)
+% 
+% \end{itemize}
+% 
+% \end{frame}
+% 
+% \begin{frame}
+% \frametitle{Standard algorithms for fitting DPM model}
+% A standard Gibbs sampling method targeting the posterior for the DPM model is known as the Chinese Restaurant Process (CRP)
+% \[y_g|\theta, \zeta_g \ind f_{\theta_{\zeta_g}}\]
+% \[\op{p}(\zeta_g|y, \alpha, \op{Q}, \zeta_{-g}) = \frac{m_k}{n + \alpha - 1}\sum_{k=1}^{K^*}\delta_k + \frac{\alpha}{n + \alpha - 1}\delta_{K^*+1}\]
+% \[\theta_k \ind \op{Q}\]
+% 
+% where $\zeta_{-g} = \{\zeta_h: h\neq g\}$, $m_k = |\{h: \zeta_h=k\}|$ and $K^*=|\{k:\exists \zeta_h=k\}|$.
+% 
+% \begin{itemize}
+% \item Marginalizes over the unknown $\mc{P}$
+%   \item Large number of sequential Gibbs steps for $\zeta$
+%   \item Potentially slow mixing
+% \end{itemize}
+% 
+% \end{frame}
+% 
+% \begin{frame}
+% \frametitle{Stick-breaking process}
+% Let
+% \begin{align}
+% \label{stick}
+% \begin{split}
+% V_k &\iid \op{Beta}(a_k, b_k), \; k\ge 1\\
+% \pi_k &= V_k \prod_{j < k}(1 - V_j); j > 1, \quad \pi_1 = V_1
+% \end{split}
+% \end{align}
+% 
+% We denote (\ref{stick}) by $\pi \sim \op{Stick}(a, b)$.
+% 
+% \end{frame}
+% 
+% \begin{frame}
+% \frametitle{Stick-breaking Construction}
+% \footnotesize
+% 
+% \cite{sethuraman1994} developed the stick-breaking construction of Dirichlet process.
+% Let 
+% \begin{align*}
+% \theta_g &\iid \op{Q},\; i\ge 1, \; \op{Q} \text{ a probability distribution}\\
+% \pi & \sim \op{Stick}(\mathbbm{1}, \alpha\mathbbm{1})
+% \end{align*}
+% 
+% Then
+% \[\mc{P} = \sum_{k=1}^{\infty} \pi_k\,\delta_{\theta_k}\]
+% is a realization from $\op{DP}(\alpha,\op{Q})$.\\
+% 
+% An arbitrarily close approximation can be given by $\mc{P}_K \approx \mc{P}_{\infty}$, where
+% \[\mc{P_{K}} = \sum_{k=1}^{K} \pi_i\,\delta_{\theta_k}.\]
+% \pause
+% \citep{ishwaran2000markov}
+% \begin{itemize}
+% \item
+% Promotes rapid mixing
+% \item
+% approximation error decreases exponentially in $K$
+%   \end{itemize}
+% \end{frame}
+% 
+% \begin{frame}
+% \frametitle{Model}
+% Using the truncation approximation our model can be recast as
+% \begin{align}
+% \begin{split}
+% y_{gvi} | x_{gv}^, \zeta_g, \beta, \sigma^2 &\ind \op{N}\left(x_{gv}^\top\beta_{\zeta_g}, \sigma^2_{\zeta_g} \right) \\
+% \zeta_g|\pi &\iid \sum_{k=1}^K \pi_k\delta_k(\cdot)\\
+% \pi | \alpha & \op{Stick}(1, \alpha)\\
+% (\beta_k, \sigma^2_k) &\iid \op{Q}\\
+% \op{Q} &= \op{N}(m, C) \times \op{IG}(a, b)
+% \end{split}
+% \end{align}
+% \end{frame}
+% 
+% \begin{frame}[t]
+% \frametitle{Truncated DPM model}
+% \begin{columns}[T]
+% \begin{column}[T]{.5\textwidth}
+% Note conditional independence of:
+%   \begin{itemize}
+% \item $\theta_k \equiv (\beta_k, \sigma_k^2)$ given $\zeta$
+%   \item $\pi$ given $\zeta$
+%   \item $\zeta_g$ given $\beta, \sigma^2, \pi$
+%   \end{itemize}
+% \end{column}
+% 
+% \begin{column}[T]{.45\textwidth}
+% % \resizebox{.7\textwidth}{!}{\input{tdpm.tikz}\unskip}
+% \include{blockedgibbs}
+% \end{column}
+% \end{columns}
+% \end{frame}
+% 
+% 
+% \begin{frame}
+% \frametitle{Gibbs sampler}
+% \tiny
+% By conditional independence,
+% \begin{align*}
+% p(\pi, \beta, \sigma^2 | y, \zeta) & = p(\pi | \zeta) \prod_{k=1}^{K} p( \beta ,\sigma^2| y, \zeta )\\%
+% p(\zeta|y, \pi, \beta, \sigma^2) &= \prod_{g=1}^{G} p(\zeta_g|y, \pi, \beta, \sigma^2) \\
+% % p(\zeta,\beta,\sigma^2,\pi|y) &\propto \left\{ \prod_{g=1}^{G} p(y_g|\beta,\sigma,\zeta)\} \cdot \\
+% % & \left\{ \prod_{k=1}^K p(\beta_k,\sigma^2_k|m, C, a, b) \right\}\\
+% \end{align*}
+% 
+% Sampling from the full conditionals can then proceed as follows:
+%   \begin{align*}
+% p(\pi|\zeta, \alpha) &= \op{Stick}(M + 1, T + \alpha)\\%
+% p(\beta_k|y, \sigma^2_k, \zeta) &= \op{N} \left( \hat{\beta}_k, \sigma^2_k \left( \sum_{g:\zeta_g=k} X^\top X + \sigma^2_k C^{-1} \right)^{-1} \right)\\
+% p(\sigma^2_k |y, \beta_k, \zeta) &= \op{IG} \left( a + M_k/2, b + \sum_{g: \zeta_g = k} (y_g - x_g^\top \beta_k )^\top ( y_g - x_g^\top \beta_k )/2 \right)\\%
+% p(\zeta_g|y_g, \beta, \sigma^2, \pi) & \propto \sum_{k=1}^K \pi_k\, \op{N} (x_{gv} \beta_k, \sigma^2_k)%
+% \end{align*}
+% 
+% $M_k:=|\{\zeta_g = k\}|$, $T_k:=|\{\zeta_g > k\}|$ and $\hat{\beta}_k$ is the posterior expectation of $\beta_k$ given $\{y_g: \zeta_g=k\}$
+%   \end{frame}
+% 
+% \begin{frame}
+% \frametitle{Using GPUs to take advantage of parallel computing capability}
+% To implement our semiparametric model, we can benefit from parallelism within each iteration of our sampler
+% \begin{itemize}
+% \item sampling for conditionally independent parameters
+% \footnote{\cite{landau2016fully} used these principles to construct a Gibbs sampler for a parametric hierarchical model using CUDA \citep{nickolls2008scalable}}
+% \item reductions to compute summaries for hyperparameters \footnotemark[\value{footnote}]
+% \item evaluations of the component probabilities for $\zeta$
+%   \item cumulative sums to perform updates of $\pi$ as well as $\zeta$
+%   \end{itemize}
+% 
+% \end{frame}
+% 
+% \begin{frame}[t,fragile]
+% \frametitle{Exclusive parallel scan (cumulative sum)}
+% \input{scan}
+% \end{frame}
+% 
+% \begin{frame}
+% \frametitle{Summary}
+% \begin{itemize}
+% \item Describe semiparametric MCMC algorithm
+% 
+% \item Evaluate suitability for gene expression application
+% \begin{itemize}
+% \item How does it scale in G?
+% \item In N?
+% \item Consider suitability of truncation approximation
+% \end{itemize}
+% \end{itemize}
+% 
+% \end{frame}
+% 
+% % \begin{frame}
+% % \frametitle{Truncated approximation of DP}
+% % 
+% % \end{frame}
+% 
+% % \section{Sampling methods}
+% % \begin{frame}
+% % \frametitle{Review of existing methods}
+% % (Blackwell and MacQueen), (Neal 2000), (Ishwaran 2001)
+% % \end{frame}
+% % 
+% % \subsection{Polya-urn approach}
+% % \begin{frame}
+% % \frametitle{Polya-urn sampling}
+% % A Dirichlet process $P$ drawn from $DP(\alpha)$ can be identified as the limiting distribution, updating $\mc{Q}_k$ with $\mc{Q}_{k+1} = \mc{Q}_k + \delta_{\{X_k+1\}}$, where $X_{k+1}$ is a draw from $\mc{Q}_k/\mc{Q}_k(\Omega)$ and $\mc{Q}_0 = \alpha/\alpha(\Omega)$. 
+% % \end{frame}
+% % 
+% % \subsection{Truncated stick-breaking approach}
+% % \begin{frame}
+% % \frametitle{Truncated stick-breaking sampling}
+% % \end{frame}
+% % 
+% % \section{Computational issues}
+% % \begin{frame}
+% % \frametitle{Computation}
+% % \end{frame}
+% % 
+% % \subsection{DPpackage}
+% % \begin{frame}
+% % \frametitle{DPpackage}
+% % \end{frame}
+% % 
+% % \subsection{Massively parallel computing}
+% % \begin{frame}
+% % \frametitle{Massively parallel Gibbs steps}
+% % \end{frame}
+% % 
+% % \section{Proposed approach}
+% % \begin{frame}
+% % \frametitle{Proposed approach}
+% % \end{frame}
+% % 
+% % \section{Case study: RNA-seq}
+% % \begin{frame}
+% % \frametitle{Case study: RNA-seq}
+% % \end{frame}
+% 
+% \section{Case Study}
+% 
+% \begin{frame}
+% \frametitle{Case study}
+% The \cite{paschold2012} data have been analyzed by Landau \citep{landau2016fully} using a variety of parametric hierarchical models priors.
+% 
+% How do the results differ under a semi-parametric hierarchical model?\\
+% 
+% \cite{liu2015semi} proposed a Bayesian semi-parametric model for the detection of differentially expressed genes using RNA-seq data. Their model used a Poisson-Gamma mixture model for the data with a $DP$ prior on a scalar parameter, $\rho_g$ and constructed the base measure to put positive mass on null hypotheses.\\
+% 
+% Our model is also semiparametric, but can work with arbitrary treatment structures with more than two treatments.
+% 
+% \end{frame}
+% 
+% \begin{frame}
+% \frametitle{Simulation studies}
+% 
+% How sensitive are our inferences to:
+%   \begin{itemize}
+% \item Fixing or modeling $\alpha$?
+% \item Fixing or modeling $\mc{Q}$?
+% \item Choice of design matrix?
+% \end{itemize}
+% 
+% To evaluate the detection of non-null genes:
+%   \begin{itemize}
+% \item Simluate a series of realistic data sets as in \cite{niemi2015empirical}
+% \item Fit our model and a parametric model(s) (fbseq)
+% \item Rank genes by posterior probability of event of interest
+% \item Compare receiver operator characteristic curves and AUC
+% \end{itemize}
+% \end{frame}
+% 
+% \section{Possible Extensions}
+% 
+% \begin{frame}
+% \frametitle{Lognormal mixture of Poisson}
+% Instead of modeling $\log(y_{gn}+1)$ as normal, it seems more natural to do as in \cite{landau2016fully}:
+%   
+%   \[y_{gn} \sim \op{Poisson}(\exp(X_n\,\beta_{\zeta_g} + \epsilon_{gn}))\]
+% \[\epsilon_{gn} \sim N(0, \sigma^2_{\zeta_g})\]
+% 
+% Complications:
+%   \begin{itemize}
+% \item Loss of conjugacy for sampling $(\beta,\sigma^2)_k$ from full conditional
+% \item Additional step to draw $\epsilon_g$
+%   \end{itemize}
+% \end{frame}
+% 
+% \begin{frame}
+% \frametitle{Ge et al slice sampler}
+% \footnotesize
+% \cite{ge2015distributed} noted that, integrating over $\zeta_g$,
+% \begin{align*}
+% p(y_{g}|\theta,\pi) &= \sum_{k=1}^\infty \pi_k \, f_{\theta_k}(y_g)\\
+% &= \int \sum_{k=1}^{\infty} \pi_k \, \mc{U}(u_g; 0,\pi_k)\,f_{\theta_k}(y_g)\; d\,u_g\\
+% &= \int \sum_{k=1}^{\infty} \mathbbm{1}(0<u_g<\pi_k)\,f_{\theta_k}(y_g)\; d\,u_g
+% \end{align*}
+% 
+% Conditioning on $u_g$, makes the full conditional of $\zeta_g$ depend on only finitely many terms:
+%   \[p(\zeta_g| u_g, y_g, \theta, \pi) \propto \sum_{\{k:u_g<\pi_k\}} f_{\theta_k}(y_g)\]
+% 
+% Additionally, if we denote $K$, the number of occupied clusters, and $\pi_{K^*}$ the combined probability of all other clusters, then
+% \[p(\pi_1, \pi_2, \ldots, \pi_K, \pi_{K^*}) =\op{Dirichlet}(m_1,m_2,\ldots,m_K,\alpha)\]
+% \pause
+% 
+% \end{frame}
+% 
+\section[failure-time model]{A hierarchical failure-time model for observational data exhibiting infant-mortality and wearout failure modes}
+% 
+% \begin{frame}
+% \frametitle{Data}
+% (Joint work with Colin Lewis-Beck)\\
+% 
+% In 2013, Backblaze (\url{https://www.backblaze.com/}), a cloud storage company, began releasing daily records of its fleet of hard drives available. These hard drives continuously spin in controlled storage pods where they run until failure.  When a hard drive fails it is permanently removed, and new hard drives are continuously being added to the fleet. The data include:\\
+% \begin{itemize}
+% \item
+% Date (yyyy-mm-dd)
+% \item
+% Serial Number (unit ID)
+% \item
+% Model (manufacturer assigned)
+% \item
+% Failure (indicator of last record before removed for failure)
+% \item
+% Hours of operation
+% \item
+% Capacity, and 79-89 additional SMART Stats (which we do not pay attention to)
+% \end{itemize}
+% \end{frame}
+% 
+% \begin{frame}
+% \frametitle{Notation}
+% \begin{itemize}
+% \item $m=1,...,M$: drive model
+% \item $i=1,...,n_m$: unit
+% \item $y_{mi}$: number of hours a unit had operated at the end of the record
+% \item $t_{mi}$: left-truncation time
+% 
+% \item $c_{mi}$: indicator right-censored
+% \end{itemize}
+% \end{frame}
+% 
+% \begin{frame}
+% \frametitle{Model}
+% \small
+% The general limited failure population model \citep{chan1999failure} defines 
+% \[\Phi_m = 1 - (1 - \pi\,\op{F}_{m1})\,(1 - \op{F}_{m2}),\]
+% where we can choose $\op{F}_{mj}\equiv \op{F}_{\mu_{mj},\sigma_{mj}}$ be a cdf for a Weibull distribution with log-location $\mu_{mj}$, scale $\sigma_{mj}$. 
+% 
+% The likelihood is defined by $\prod_{m=1}^M \prod_{i=1}^{n_m} p(y_{mi}| t_{mi}, c_{mi})$ where
+% \[ p(y_{mi} | t_{mi}, c_{mi}) = 
+%      \begin{cases} \frac{\phi_{m}(y_{mi})}{1-\Phi_{m}(t_{mi})} & \mbox{if } c_{mi} = 0\\
+%    \frac{1-\Phi_{m}(y_{mi})}{1 - \Phi_{m}(t_{mi})} & \mbox{if } c_{mi}=1
+%    \end{cases}\]
+% Further, we model
+% {\tiny
+%   \[ (\log(q_{p_1,m1}), \log(\sigma_{m1}), \log(q_{p_2,m2}), \log(\sigma_{m2}), \op{logit}(\pi_{m}))^\top \ind \op{N}(\eta, \op{diag}(\tau)\,I),\]
+% }
+% where $q_{p_j,mj}$ is the $p_j^{th}$ quantile of $\op{F}_{mj}$. (This re-parameterization improves numerical stability because of the heavy right censoring.)
+% \end{frame}
+% 
+% \begin{frame}
+% \frametitle{Failure distribution estimation}
+% \includegraphics[height=.8\textheight]{overview_dm_compare}
+% 
+% \tiny Weibull plots with pointwise posterior 95\% credible intervals and Kaplan-Meier estimate for 22 drive models.
+% \end{frame}
+% 
+% \begin{frame}
+% \frametitle{Results}
+% \begin{itemize}
+% \item Approach allows flexible modeling of failure distributions for heterogenous systems with mostly censored/incomplete data
+% \item Hierarchical modeling provides automatic, data-dependent regularization of parameters
+% \item Working implementation using off-the-shelf software
+% \end{itemize}
+% \end{frame}
+% 
+
+\begin{frame}[allowframebreaks]
+\tiny
+\frametitle{References}
+\bibliographystyle{agsm}
+\bibliography{../mybib}
+
+\end{frame}
+
+
+\end{document}
