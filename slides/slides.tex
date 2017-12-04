@@ -6,7 +6,7 @@
 \author{Eric Mittman \\ \vspace{.5cm} Advisor: Jarad Niemi}
 
 %includes
-\usepackage{amsmath, bbm}
+\usepackage{amsmath, bbm, blkarray}
 \usepackage{graphicx}
 \usepackage{natbib}
 % \usepackage{tikz}
@@ -14,7 +14,7 @@
 % \usepackage{tikzscale}
 % \usetikzlibrary{arrows,decorations.pathmorphing,backgrounds,matrix,positioning,fit,petri, external}
 \usepackage{booktabs}
-\usepackage{multirow}
+\usepackage{multirow,makecell}
 %\tikzexternalize[prefix=tikz/]
 
 %theme
@@ -61,23 +61,18 @@
 % \end{frame}
 
 %%% Section 0: Data problem
-\begin{frame}[label=current]
-\frametitle{Acknowledgment}
-This research was supported by National Institute of General Medical Sciences (NIGMS) of the National Institutes of Health and the joint National Science Foundation / NIGMS Mathematical Biology Program under award number R01GM109458. The content is solely the responsibility of the authors and does not necessarily represent the official views of the National Institutes of Health or the National Science Foundation.
-\end{frame}
-
 \section[Gene Expr.]{Gene expression profiling}
 
 \begin{frame}[label=current]
-\frametitle{Gene expression}
+\frametitle{Gene expression $=$ Transcript abundance}
 {\scriptsize \citep[\textit{Statistical Analysis of Next Generation Sequencing Data}]{datta2014}}
+The Central Dogma of Biology says:
 \begin{itemize}
 \pause\item DNA encodes all biological information
-\pause\item regions of DNA (genes) encode blueprints for proteins
-\pause\item messenger RNA (mRNA) conveys information to ribosomes
-\pause\item ribosomes assemble proteins
+\pause\item Genes (regions of the DNA) encode directions for assembling proteins
+\pause\item messenger RNA (mRNA) conveys ``transcripts" of these directions to the ribosomes where they are assembled 
 \end{itemize}
-\pause Gene expression is regulated by mRNA.
+\pause Transcript abundance is proxy for gene expression.
 \end{frame}
 
 \begin{frame}[label=current]
@@ -85,31 +80,20 @@ This research was supported by National Institute of General Medical Sciences (N
 \pause RNA-seq is:
 \vspace{.5cm}
 \begin{itemize}
-\pause \item "whole genome shotgun sequencing"
-\pause \item simultaneously measurement of transcript abundance of thousands of genes at once
-\pause \item ... at single-base resolution
+\pause \item "whole transcriptome shotgun sequencing"
+\pause \item simultaneously measurement of transcript abundance of thousands of genes
+\pause \item sequencing is high resolution
 \end{itemize}
 
 \vspace{.5cm}
-Steps to producing RNA-seq data:
+Stages of RNA-seq data production:
 \vspace{.5cm}
 \begin{itemize}
-\pause \item isolate mRNA and fragment it
-\pause \item match fragments back to genes/features (counts)
+\pause \item isolate mRNA
+\pause \item fragmentation
+\pause \item amplification
+\pause \item sequencing/matching fragments back to genes/features (counts)
 \end{itemize}
-\end{frame}
-
-\begin{frame}[label=current]
-\frametitle{Motivating example}
-\begin{beamerboxesrounded}[upper=upcol,lower=lowcol,shadow=true]{Heterosis}
-\begin{itemize}
-\item ``Hybrid vigor"
-\pause \item Larger offspring than parents
-\pause \item Complementation
-\pause \item High parent heterosis (HPH) $LP < HP < H$
-\pause \item Low parent heterosis (LPH) $H < LP < HP $
-\end{itemize}
-\end{beamerboxesrounded}
 \end{frame}
 
 \begin{frame}[label=current]
@@ -122,79 +106,172 @@ Steps to producing RNA-seq data:
 \centering
 \begin{tabular}{crrrrrr}
   \toprule
-& \multicolumn{3}{c}{Population 1} & \multicolumn{3}{c}{Population 2} \\
+& \multicolumn{3}{c}{Alcoholic Liver} & \multicolumn{3}{c}{Normal Liver} \\
   \midrule
 & Sample 1 & Sample 2 & Sample 3 & Sample 1 & Sample 2 & Sample 3 \\ 
   \midrule
-Gene 1 &    7 & 2 & 0 & 14 & 18 & 41 \\ 
-Gene 2 &   55 & 42 & 40 & 32 & 22 & 37 \\ 
-Gene 3 &   41 & 40 & 32 & 61 & 61 & 60 \\ 
-Gene 4 &   40 & 43 & 35 & 15 & 24 & 39 \\
+Gene 1 &    5 & 0 & 3 & 3 & 0 & 4 \\ 
+Gene 2 &  3637 & 2730 & 2797 & 2003 & 1734 & 2598 \\ 
+Gene 3  & 40 & 45 & 59 & 6 & 4 & 6 \\ 
+Gene 4 &  69 & 67 & 64 & 14 & 5 & 10 \\ 
+\vdots & & & & & &\\
 \midrule
 raw library size  &11569434 & 10079799 & 9028465 & 10028258 & 9010306 & 10283594 \\ 
    \bottomrule
 \end{tabular}
 }
 \end{table}
+\begin{itemize}
+\pause \item Overdispersed counts (contain zeros)
+\pause \item Small samples are typical
+\pause \item Our approach: fit a hierarchical model to borrow information across genes
+\end{itemize}
 \end{frame}
 
 \begin{frame}[label=current]
-\frametitle{Data from \citet{paschold}}
-Research goal: To use gene expression data to identify genes responsible for hybrid vigor (heterosis).
+\frametitle{Motivating example - Heterosis}
+\begin{columns}
+\begin{column}{.3\textwidth}
+\begin{table}
+\begin{tabular}{c}
+\includegraphics[height=.35\textheight]{BFMears}\\
+\includegraphics[height=.35\textheight]{BFMfield}
+\end{tabular}
+{\scriptsize \url{https://archive.news.iastate.edu/news/2006/may/vigor.shtml}}
+\end{table}
+\end{column}
 
+\begin{column}{.7\textwidth}
+\scalebox{.9}{
+  \begin{beamerboxesrounded}[upper=upcol,lower=lowcol,shadow=true]{Heterosis}\begin{itemize}
+      \pause\item Heterosis $=$ ``Hybrid vigor"
+      \pause \item Superior traits in hybrid offpring compared with inbred parents
+      \pause \item Want to identify genetic links
+    \end{itemize}
+    \vspace{.5cm}
+    \pause average hybrid expression more extreme than parental expression
+    \begin{itemize}
+    \pause \item high-parent heterosis (HPH):\\low parent $<$ high parent $<$ hybrid
+    \pause \item low-parent heterosis (LPH):\\ hybrid $<$ low parent $<$ high parent
+    \end{itemize}
+  \end{beamerboxesrounded}
+  \onslide<1->
+}
+\end{column}
+\end{columns}
+\end{frame}
+
+
+\begin{frame}[label=current]
+\frametitle{Data from \citet{paschold}}
+Produced 16 RNA samples from primary roots of 3.5 day old maize seedlings (each produced from 10 individuals) with aim to identify genes responsible for hybrid vigor (heterosis).
+\vspace{.5cm}
 \pause\begin{beamerboxesrounded}[upper=upcol,lower=lowcol,shadow=true]{}
 \begin{itemize}
 \item 2 recombinant inbred lines (homozygous): B73, Mo17
 \item 2 reciprocal hybrid crosses: B73$\times$Mo17, Mo17$\times$B73
 \item 4 replicates of each variety
-\item sequencing done on 2 flow cells, replicates balanced across flow cells
+\item sequencing done on 2 flow cells, genotypes balanced across flow cells
 \end{itemize}
 \end{beamerboxesrounded}
 \end{frame}
 
-%%%%%%%%%%%%%%%%%%%
-\section[Model]{Bayesian nonparametric model}
+\begin{frame}[label=current]
+\frametitle{Gene-specific parameters}
+\begin{beamerboxesrounded}[upper=upcol,lower=lowcol,shadow=true]{model matrix} \scalebox{.6}{
+  \begin{equation*}
+  \begin{blockarray}{rrrrrr}
+    \mbox{Sample} & \mbox{intercept} & \mbox{parental HD} & \mbox{hybrid} & \mbox{hybrid HD} & \mbox{flow cell}\\
+    \begin{block}{r(rrrrr)}
+    \mbox{B73}_1  & 1 &  1 & 0 & 0 & 0\\
+    \mbox{B73}_2  & 1 &  1 & 0 & 0 & 0\\
+    \mbox{B73}_3  & 1 &  1 & 0 & 0 & 1\\
+    \mbox{B73}_4  & 1 &  1 & 0 & 0 & 1\\
+    \mbox{B73}\times\mbox{Mo17}_1  & 1 &  0 & 1 & 1 & 0\\
+    \mbox{B73}\times\mbox{Mo17}_2  & 1 &  0 & 1 & 1 & 0\\
+    \mbox{B73}\times\mbox{Mo17}_3  & 1 &  0 & 1 & 1 & 1\\
+    \mbox{B73}\times\mbox{Mo17}_4  & 1 &  0 & 1 & 1 & 1\\
+    \mbox{Mo17}\times\mbox{B73}_1  & 1 &  0 & 1 & -1 & 0\\
+    \mbox{Mo17}\times\mbox{B73}_2  & 1 &  0 & 1 & -1 & 0\\
+    \mbox{Mo17}\times\mbox{B73}_3  & 1 &  0 & 1 & -1 & 1\\
+    \mbox{Mo17}\times\mbox{B73}_4  & 1 &  0 & 1 & -1 & 1\\
+    \mbox{Mo17}_1 & 1 & -1 & 0 & 0 & 0\\
+    \mbox{Mo17}_2 & 1 & -1 & 0 & 0 & 0\\
+    \mbox{Mo17}_3 & 1 & -1 & 0 & 0 & 1\\
+    \mbox{Mo17}_4 & 1 & -1 & 0 & 0 & 1
+    \end{block}
+  \end{blockarray}
+  \end{equation*}
+}
+\end{beamerboxesrounded}
+\end{frame}
 
 \begin{frame}[label=current]
-\frametitle{Normalization}
+\frametitle{Gene-specific parameters}
+\begin{table}
+\begin{tabular}{ll}
+\noindent\parbox[c]{.8\textwidth}{\includegraphics[width=.8\textwidth]{pairs1}} & \pause $\beta_g \sim ?$
+\end{tabular}
+\end{table}
+\onslide<1->
+\end{frame}
+
+%%%%%%%%%%%%%%
+\section[DP intro]{Intro: Dirichlet processes}
+
+\begin{frame}[label=current]
 \scalebox{.8}{
-  \begin{beamerboxesrounded}[upper=upcol,lower=lowcol,shadow=true]{Definitions}
-  \[r_{gn} = \mbox{count for gene }g \mbox{, sample }n;\quad g=1,\ldots,G,\quad n=1,\ldots,N\]
-  \[R_n = \mbox{library size for sample }n\]
-  \[\log \tilde{R} = \frac{1}{N}\sum_{n=1}^N \log(R_n)\]
-  \[y_{gn} = \log_2 \left(\frac{r_{gn}+0.5}{R_n+1}\times 10^6\right)\]
-  \[\tilde{r}_g = \frac{1}{N}\sum_{n=1}^N y_{gn} + \log_2(\tilde{R}) - \log_2(10^6)\]
-  \[X = \mbox{model matrix}\]
-  \[s_g = \sqrt{MSE}\mbox{ from fitting a linear model, }y_g \sim N(X\beta_g, \sigma^2_gI_{n\timesn})\]
+  \begin{beamerboxesrounded}[upper=upcol,lower=lowcol,shadow=true]{Stick-breaking representation:}
+    $\mathcal{P}$ = a random probability distribution on $\mathbb{R}^p;p\in \mathbb{N}$\\
+    \pause $\mathcal{P} \sim \op{DP}(\alpha Q) \implies$
+    \begin{itemize}
+      \pause \item $\mathcal{P} \stackrel{d}{=} \sum_{k=1}^\infty \pi_k \delta_{\tilde{\mu}_k},\;$ where $\delta_{\cdot}$ is the Dirac delta function, \pause
+      \item $Q$ is a probability distribution on $\mathbb{R}^p$
+      \item $\tilde{\mu}_k \ind Q$ \pause and
+      \item $\frac{\pi_k}{1-\sum_{\ell<k} \pi_\ell}=\nu_k \ind \op{Be}(1,\alpha)$
+    \end{itemize}
+    \onslide<1->
+    \citep{sethuraman}
   \end{beamerboxesrounded}
 }
 \end{frame}
 
 \begin{frame}[label=current]
-\frametitle{Mean-variance in RNA-seq}
-\includegraphics[width=\textwidth]{voom1}
+\frametitle{DP as infinite mixture ($Q=\op{N}(0,1)$)}
+\scalebox{.7}{
+  \begin{table}
+  \centering
+  \begin{tabular}{crl}
+  \includegraphics[height=.4\textwidth]{dp1}& \multirowcell{2}{\large $Q=$\\$\alpha=$} & \multirowcell{2}{\large ``prior guess" \\ ``prior sample size"}\\
+  \pause\includegraphics[height=.4\textwidth]{dp2}&&\\
+  \end{tabular}
+  \end{table}
+  \onslide<1->
+}
 \end{frame}
 
-\begin{frame}
-\frametitle{Variance modeling at the observation level (voom)}
-\includegraphics[width=\textwidth]{voom1}
+\begin{frame}[label=current]
+\frametitle{Illustrative example}
+{\small Suppose we observe $y_{gn};\; g=1,\ldots,200,\; n=1,\ldots,3$ where\\
+    \pause\[ y_{gn} \sim \op{N}(\mu_g,\sigma^2),\mbox{ with }\{\mu_g\},\sigma_g\mbox{ unknown.}\]
+ \pause $\bar{y}_{g\cdot}$ (unbiased for $\mu_g$) are shown below:\\
+ {\centering \includegraphics[width=.9\textwidth]{samplemeans_ie}}
+}
+ 
 \end{frame}
 
-\begin{frame}
-\frametitle{example - voom}
-\end{frame}
-
-\begin{frame}
-\frametitle{Model matrix}
-\end{frame}
-
-\begin{frame}
-\frametitle{Gene-specific parameters}
-\end{frame}
-\section{Model}
-
-\begin{frame}
-\frametitle{example - scenario}
+\begin{frame}[label=current]
+\frametitle{Illustrative example}
+{\small
+ {\centering \includegraphics[width=.9\textwidth]{samplemeans_ie}}
+ Consider these models for $\mu_g$:
+ \begin{itemize}
+  \pause \item $\mu_g \ind N(\eta, \tau^2)$\\
+     with prior distributions $\eta \sim N(0, 5^2)$, $\tau^2 \sim \op{IG}(0.5,0.5)$
+  \pause \item $\mu_g \ind \pi_1 \op{N}(\eta_1, \tau^2)+\pi_2 \op{N}(\eta_2, \tau_2) + \pi_3 \op{N}(\eta_3,\tau^2)$ with prior distributions \\ $\eta_j \ind N(0,5^2)$, $\tau^2 \sim $\op{IG}(0.5,0.5)$ and $\pi \sim \op{Dir}(1,1,1)$, subject to $\eta_1<\eta_2<\eta_3$.
+   \pause \item $\mu_g \ind DP(\alpha Q)$ with $Q \stackrel{d}{=}\op{N}(0,5^2)$, and prior $\alpha \sim \op{G}(3,3/14.2)$
+     \end{itemize}
+}
 \end{frame}
 
 \begin{frame}
@@ -214,6 +291,85 @@ Research goal: To use gene expression data to identify genes responsible for hyb
 \begin{frame}
 \includegraphics[width=\textwidth]{toy_ex/precision.pdf}
 \end{frame}
+
+%%%%%%%%%%%%%
+\section[BNP model]{BNP model for gene expression}
+
+\begin{frame}[label=current]
+\frametitle{BNP model}
+\scalebox{.8}{
+  \begin{beamerboxesrounded}[upper=upcol,lower=lowcol,shadow=true]{Definitions}
+  \[y_{g} \ind \op{N}(X\beta_g, \sigma_g^2W_g^{-1}),\]
+  \[(\beta_g^\top,\sigma_g^2) \ind \mathcal{P},\]
+  \[\mathcal{P} \sim \op{DP}(\alpha Q),\]
+  \pause where
+  \begin{itemize}
+  \item$y_{g}$ is $n$-vector of log counts per million (log-cpm) for gene $g$
+  \pause \item $X$ is the model matrix
+  \pause \item $W_g^{-1}$ is a known diagonal matrix of precision weights
+  \pause \item $\op{DP}(\alpha Q)$ is a Dirichlet process with concentration parameter $\alpha$ and base measure $Q$
+  \end{itemize}
+  \end{beamerboxesrounded}
+  \onslide<1->
+}
+\end{frame}
+
+\begin{frame}[label=current]
+\frametitle{Dirichlet process (DP)}
+\scalebox{.8}{
+  \begin{beamerboxesrounded}[upper=upcol,lower=lowcol,shadow=true]{Stick-breaking representation \citep{sethuraman}:}
+    $\mathcal{P} \sim \op{DP}(\alpha Q)$ \pause $\implies$
+    \begin{itemize}
+      \item $\mathcal{P} \stackrel{d}{=} \sum_{k=1}^\infty \pi_k \delta_{(\tilde{\beta}_k^\top,\tilde{\sigma}^2_k)},\quad$ where $\delta_{}$ is the Dirac delta function \pause with
+      \item $(\tilde{\beta}_k^\top,\tilde{\sigma}^2_k) \ind Q$ \pause and
+      \item $\nu_k = \frac{\pi_k}{1-\sum_{\ell<k} \pi_\ell} \ind \op{Be}(1,\alpha)$
+    \end{itemize}
+  \end{beamerboxesrounded}
+  \onslide<1->
+}
+\end{frame}
+
+\begin{frame}%[label=current]
+\frametitle{Normalization and mean-variance trend adjustment}
+\citep{voom}
+\scalebox{.6}{
+  \begin{beamerboxesrounded}[upper=upcol,lower=lowcol,shadow=true]{Definitions}
+  \[r_{gn} = \mbox{count for gene }g \mbox{, sample }n;\quad g=1,\ldots,G,\quad n=1,\ldots,N\]
+  \pause\[R_n = \mbox{library size for sample }n\]
+  \pause\[\log \tilde{R} = \frac{1}{N}\sum_{n=1}^N \log(R_n)\]
+  \pause\[y_{gn} = \log_2 \left(\frac{r_{gn}+0.5}{R_n+1}\times 10^6\right)\]
+  \pause\[\tilde{r}_g = \frac{1}{N}\sum_{n=1}^N y_{gn} + \log_2(\tilde{R}) - \log_2(10^6)\]
+  \pause\[X = \mbox{model matrix}\]
+  \pause\[s_g = \sqrt{MSE}\mbox{ from ind. OLS fits of, }y_g \sim N(X\beta_g, \sigma^2_gI_{n\timesn})\]
+  \end{beamerboxesrounded}
+  \onslide<1->
+}
+\end{frame}
+
+\begin{frame}[label=current]
+\frametitle{Mean-variance trend}
+\includegraphics[width=\textwidth]{voom1}
+\end{frame}
+
+\begin{frame}[label=current]
+\frametitle{Mean-variance trend}
+\includegraphics[width=\textwidth]{voom2}
+\end{frame}
+
+\begin{frame}
+\frametitle{example - voom}
+\end{frame}
+
+\begin{frame}
+\frametitle{Model matrix}
+\end{frame}
+
+\begin{frame}
+\frametitle{Gene-specific parameters}
+\end{frame}
+\section{Model}
+
+
 
 \begin{frame}
 \frametitle{BNP model}
@@ -839,5 +995,10 @@ $y_{gn}$ is observed expression for gene/feature $g$, sample $n$; $y_{gn} \ge 0$
 
 \end{frame}
 
+\begin{frame}[label=current]
+\frametitle{Acknowledgment}
+\small%
+This research was supported by National Institute of General Medical Sciences (NIGMS) of the National Institutes of Health and the joint National Science Foundation / NIGMS Mathematical Biology Program under award number R01GM109458. The content is solely the responsibility of the authors and does not necessarily represent the official views of the National Institutes of Health or the National Science Foundation.
+\end{frame}
 
 \end{document}
