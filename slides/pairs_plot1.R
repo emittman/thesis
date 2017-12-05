@@ -3,11 +3,12 @@ load("heterosis_design.RData")
 library(limma)
 library(edgeR)
 library(dplyr)
-nonzero_id <- which(!(rowSums(my_dat_wide[,-1]) < 8))
+nonzero_id <- which(!(rowSums(my_dat_wide[,-1]) == 0))# < 8))
 my_dat_wide = my_dat_wide[nonzero_id,]
 voom_dat <- voom(counts = my_dat_wide[,-1], design = X, plot=TRUE)
 str(voom_dat)
 fit <- lmFit(voom_dat)
+
 library(GGally)
 my_hex <- function(data, mapping, ...) {
 ggplot(data = data, mapping=mapping) +
@@ -18,14 +19,14 @@ scale_fill_continuous(trans="log",low="white", high="#C8102E")+
 
 my_dens <- function(data, mapping, ...) {
   ggplot(data=data, mapping=mapping) +
-    geom_density(..., fill="#C8102E", alpha=.5)+
+    geom_density(..., fill="#C8102E", alpha=.5,adjust=.5)+
     theme_bw()+theme(axis.text.x = element_text(angle=45,hjust=1,vjust=1))
 
 }
 
 library(tidyr)
-fit.dat <- data.frame(data.matrix(fit$coefficients))
-names(fit.dat) <- c("intercept", "parental HD", "hybrid", "hybrid HD", "flow cell")
+fit.dat <- data.frame(data.matrix(cbind(fit$coefficients,fit$sigma)))
+names(fit.dat) <- c("intercept", "parental HD", "hybrid", "hybrid HD", "flow cell", expression(sigma))
 jpeg(filename = "pairs1.jpg", width=14.3, height=11, units="cm", res = 200)
 ggpairs(fit.dat, lower=list(continuous=my_hex),
         upper=list(continuous=my_hex),

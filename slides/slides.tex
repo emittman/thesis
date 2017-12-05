@@ -1,5 +1,5 @@
 \documentclass{beamer}
-\includeonlyframes{current}
+% \includeonlyframes{current}
 \setbeamertemplate{navigation symbols}{}
 
 \title{Bayesian nonparametric model for gene expression}
@@ -63,8 +63,8 @@
 %%% Section 0: Data problem
 \section[Gene Expr.]{Gene expression profiling}
 
-\begin{frame}[label=current]
-\frametitle{Gene expression $=$ Transcript abundance}
+\begin{frame}%[label=current]
+\frametitle{``Gene expression" $=$ Transcript abundance}
 {\scriptsize \citep[\textit{Statistical Analysis of Next Generation Sequencing Data}]{datta2014}}
 The Central Dogma of Biology says:
 \begin{itemize}
@@ -75,7 +75,7 @@ The Central Dogma of Biology says:
 \pause Transcript abundance is proxy for gene expression.
 \end{frame}
 
-\begin{frame}[label=current]
+\begin{frame}%[label=current]
 \frametitle{Gene expression profiling - RNA-seq}
 \pause RNA-seq is:
 \vspace{.5cm}
@@ -96,7 +96,7 @@ Stages of RNA-seq data production:
 \end{itemize}
 \end{frame}
 
-\begin{frame}[label=current]
+\begin{frame}%[label=current]
 \frametitle{RNA-seq data}
 
 % latex table generated in R 3.4.2 by xtable 1.8-2 package
@@ -128,7 +128,7 @@ raw library size  &11569434 & 10079799 & 9028465 & 10028258 & 9010306 & 10283594
 \end{itemize}
 \end{frame}
 
-\begin{frame}[label=current]
+\begin{frame}%[label=current]
 \frametitle{Motivating example - Heterosis}
 \begin{columns}
 \begin{column}{.3\textwidth}
@@ -162,7 +162,7 @@ raw library size  &11569434 & 10079799 & 9028465 & 10028258 & 9010306 & 10283594
 \end{frame}
 
 
-\begin{frame}[label=current]
+\begin{frame}%[label=current]
 \frametitle{Data from \citet{paschold}}
 Produced 16 RNA samples from primary roots of 3.5 day old maize seedlings (each produced from 10 individuals) with aim to identify genes responsible for hybrid vigor (heterosis).
 \vspace{.5cm}
@@ -176,7 +176,7 @@ Produced 16 RNA samples from primary roots of 3.5 day old maize seedlings (each 
 \end{beamerboxesrounded}
 \end{frame}
 
-\begin{frame}[label=current]
+\begin{frame}%[label=current]
 \frametitle{Gene-specific parameters}
 \begin{beamerboxesrounded}[upper=upcol,lower=lowcol,shadow=true]{model matrix} \scalebox{.6}{
   \begin{equation*}
@@ -206,37 +206,35 @@ Produced 16 RNA samples from primary roots of 3.5 day old maize seedlings (each 
 \end{beamerboxesrounded}
 \end{frame}
 
-\begin{frame}[label=current]
-\frametitle{Gene-specific parameters}
-\begin{table}
-\begin{tabular}{ll}
-\noindent\parbox[c]{.8\textwidth}{\includegraphics[width=.8\textwidth]{pairs1}} & \pause $\beta_g \sim ?$
-\end{tabular}
-\end{table}
-\onslide<1->
+\begin{frame}%[label=current]
+\frametitle{Gene-specific parameter estimates}
+{\centering
+\includegraphics[width=.8\textwidth]{pairs1}\\
+}
 \end{frame}
 
 %%%%%%%%%%%%%%
-\section[DP intro]{Intro: Dirichlet processes}
+\section[DP intro]{The Dirichlet process}
 
-\begin{frame}[label=current]
+\begin{frame}%[label=current]
 \scalebox{.8}{
-  \begin{beamerboxesrounded}[upper=upcol,lower=lowcol,shadow=true]{Stick-breaking representation:}
-    $\mathcal{P}$ = a random probability distribution on $\mathbb{R}^p;p\in \mathbb{N}$\\
+  \begin{beamerboxesrounded}[upper=upcol,lower=lowcol,shadow=true]{Stick-breaking representation}
+    $\mathcal{P}$ = a random probability measure$\\
     \pause $\mathcal{P} \sim \op{DP}(\alpha Q) \implies$
     \begin{itemize}
       \pause \item $\mathcal{P} \stackrel{d}{=} \sum_{k=1}^\infty \pi_k \delta_{\tilde{\mu}_k},\;$ where $\delta_{\cdot}$ is the Dirac delta function, \pause
-      \item $Q$ is a probability distribution on $\mathbb{R}^p$
       \item $\tilde{\mu}_k \ind Q$ \pause and
       \item $\frac{\pi_k}{1-\sum_{\ell<k} \pi_\ell}=\nu_k \ind \op{Be}(1,\alpha)$
     \end{itemize}
+    \vspace{.5cm}
+    \pause Finite approximation: choose large $K$, set $\nu_K=1$, implying, for $\ell>K$, $\pi_\ell=0$.\\
     \onslide<1->
-    \citep{sethuraman}
+    \citep{sethuraman,ishwaran2000}
   \end{beamerboxesrounded}
 }
 \end{frame}
 
-\begin{frame}[label=current]
+\begin{frame}%[label=current]
 \frametitle{DP as infinite mixture ($Q=\op{N}(0,1)$)}
 \scalebox{.7}{
   \begin{table}
@@ -250,46 +248,60 @@ Produced 16 RNA samples from primary roots of 3.5 day old maize seedlings (each 
 }
 \end{frame}
 
-\begin{frame}[label=current]
-\frametitle{Illustrative example}
+\begin{frame}%[label=current]
+\frametitle{Example: DP as random effects model}
 {\small Suppose we observe $y_{gn};\; g=1,\ldots,200,\; n=1,\ldots,3$ where\\
     \pause\[ y_{gn} \sim \op{N}(\mu_g,\sigma^2),\mbox{ with }\{\mu_g\},\sigma_g\mbox{ unknown.}\]
  \pause $\bar{y}_{g\cdot}$ (unbiased for $\mu_g$) are shown below:\\
- {\centering \includegraphics[width=.9\textwidth]{samplemeans_ie}}
+ {\centering \includegraphics[width=.9\textwidth]{samplemeans_ie}}\\
+
+\pause $\mu_g$ were in fact simulated from $1/3\op{N}(-4,1^2) + 1/3\op{N}(0,1^2) + 1/3\op{N}(4,1^2)$.
 }
- 
 \end{frame}
 
-\begin{frame}[label=current]
-\frametitle{Illustrative example}
-{\small
+\begin{frame}%[label=current]
+\frametitle{Example: DP as random effects model}
+{\footnotesize
  {\centering \includegraphics[width=.9\textwidth]{samplemeans_ie}}
  Consider these models for $\mu_g$:
- \begin{itemize}
-  \pause \item $\mu_g \ind N(\eta, \tau^2)$\\
+ \begin{enumerate}
+  \pause \item (Normal) $\mu_g \ind N(\eta, \tau^2)$\\
      with prior distributions $\eta \sim N(0, 5^2)$, $\tau^2 \sim \op{IG}(0.5,0.5)$
-  \pause \item $\mu_g \ind \pi_1 \op{N}(\eta_1, \tau^2)+\pi_2 \op{N}(\eta_2, \tau_2) + \pi_3 \op{N}(\eta_3,\tau^2)$ with prior distributions \\ $\eta_j \ind N(0,5^2)$, $\tau^2 \sim $\op{IG}(0.5,0.5)$ and $\pi \sim \op{Dir}(1,1,1)$, subject to $\eta_1<\eta_2<\eta_3$.
-   \pause \item $\mu_g \ind DP(\alpha Q)$ with $Q \stackrel{d}{=}\op{N}(0,5^2)$, and prior $\alpha \sim \op{G}(3,3/14.2)$
-     \end{itemize}
+  \pause \item (Correct) $\mu_g \ind \pi_1 \op{N}(\eta_1, \tau^2)+\pi_2 \op{N}(\eta_2, \tau^2_2) + \pi_3 \op{N}(\eta_3,\tau^2)$ with prior distributions \\ $\eta_j \ind N(0,5^2)$, $\tau^2 \sim $\op{IG}(0.5,0.5)$ and $\pi \sim \op{Dir}(1,1,1)$, subject to $\eta_1<\eta_2<\eta_3$.
+   \pause \item (DP) $\mu_g \ind \mathcal{P},\; P \sim DP(\alpha Q)$ with $Q \stackrel{d}{=}\op{N}(0,5^2)$, and prior $\alpha \sim \op{Ga}(3,3/14.2)$
+     \end{enumerate}
 }
 \end{frame}
 
-\begin{frame}
-\frametitle{example - hierarchical models}
+\begin{frame}%[label=current]
+\frametitle{Posterior CI width and coverage}
+{\centering
+  \includegraphics[height=.95\textheight]{cis_12_5}
+}
 \end{frame}
 
-\begin{frame}
-\frametitle{example - posterior predictive}
+\begin{frame}%[label=current]
+\frametitle{Example - posterior predictive density}
+Can the posterior uncover the true data generating mechanism?\\
+\pause Pointwise intervals for predictive density:
+\begin{enumerate}
+\pause \item (Normal) $p(\mu_{new}|\eta,\tau^2)$ w.r.t. $p(\eta,\tau^2|y)$
+\pause \item (Correct) $p(\mu_{new}|\eta_1,\eta_2,\eta_3,\tau^2)$ w.r.t. $p(\eta_1,\eta_2,\eta_3,\tau^2|y)$
+\pause \item (DP) Posterior draws of $\mathcal{P}$ do not have a density w.r.t. Lebesgue measure \pause ---  instead we use kernel density estimator $\sum_{k=1}^K \pi_k K_h(\mu_{new}-\tilde{\mu}_k)$ w.r.t. $p(\tilde{\mu},\pi|y)$ with a small bandwidth (0.2).
+\end{enumerate}
 \end{frame}
 
-\subsection{example - posterior predictive}
-\begin{frame}
+\begin{frame}%[label=current]
+\frametitle{Example - posterior predictive density}
 \centering
-\includegraphics[height=\textheight]{toy_ex/predictive.pdf}
+\includegraphics[height=.92\textheight]{predictive_12_5}
 \end{frame}
 
-\begin{frame}
-\includegraphics[width=\textwidth]{toy_ex/precision.pdf}
+\begin{frame}%[label=current]
+\frametitle{Gene-specific parameter estimates}
+{\centering
+  \includegraphics[width=.8\textwidth]{pairs1} \\
+}
 \end{frame}
 
 %%%%%%%%%%%%%
@@ -304,10 +316,10 @@ Produced 16 RNA samples from primary roots of 3.5 day old maize seedlings (each 
   \[\mathcal{P} \sim \op{DP}(\alpha Q),\]
   \pause where
   \begin{itemize}
-  \item$y_{g}$ is $n$-vector of log counts per million (log-cpm) for gene $g$
-  \pause \item $X$ is the model matrix
-  \pause \item $W_g^{-1}$ is a known diagonal matrix of precision weights
-  \pause \item $\op{DP}(\alpha Q)$ is a Dirichlet process with concentration parameter $\alpha$ and base measure $Q$
+  \item$y_{g}$ is $N$-vector of log counts per million (log-cpm) for gene $g$
+  \pause \item $X$ is the model matrix, with rank $p$,
+  \pause \item $W_g^{-1}$ is a known diagonal matrix of precision weights,
+  \pause \item $Q$ is product measure $\op{N}(m,C)\times\op{IG}(a_\sigma,b_\sigma).$
   \end{itemize}
   \end{beamerboxesrounded}
   \onslide<1->
@@ -322,82 +334,201 @@ Produced 16 RNA samples from primary roots of 3.5 day old maize seedlings (each 
     \begin{itemize}
       \item $\mathcal{P} \stackrel{d}{=} \sum_{k=1}^\infty \pi_k \delta_{(\tilde{\beta}_k^\top,\tilde{\sigma}^2_k)},\quad$ where $\delta_{}$ is the Dirac delta function \pause with
       \item $(\tilde{\beta}_k^\top,\tilde{\sigma}^2_k) \ind Q$ \pause and
-      \item $\nu_k = \frac{\pi_k}{1-\sum_{\ell<k} \pi_\ell} \ind \op{Be}(1,\alpha)$
+      \item $\nu_k = \frac{\pi_k}{1-\sum_{\ell<k} \pi_\ell} \ind \op{Be}(1,\alpha)$, $k<K-1$.
+      \item $\nu_K = 1 \implies \pi_\ell =0$ for $\ell>K$.
+      \pause \item Define $\zeta_g \in \{1,\ldots,K\}$, so $(\beta_g^\top,\sigma_g) = (\tilde{\beta}_{\zeta_g},\tilde{\sigma}_{\zeta_g}^2)$ \pause so that
+      \item $\zeta_g \sim \op{Catgorical}(\pi_1,\ldots,\pi_K)$ \pause and
+      \item $y_g \ind \op{N}(X\tilde{\beta}_{\zeta_g},\tilde{\sigma}_{\zeta_g}^2 W_g^{-1})$. 
     \end{itemize}
   \end{beamerboxesrounded}
   \onslide<1->
 }
 \end{frame}
 
-\begin{frame}%[label=current]
-\frametitle{Normalization and mean-variance trend adjustment}
-\citep{voom}
-\scalebox{.6}{
+\begin{frame}[label=current]
+\frametitle{Prior distibution for $\alpha$}
+  \begin{columns}
+  \begin{column}{.5\textwidth}
+    {\footnotesize 
+    \begin{itemize}
+      \pause \item $U=$ number of unique $\zeta_g$
+      \pause \item $\op{E}(U) = \sum_{g=1}^G \alpha/(g + \alpha - 1)$.
+      \pause \item Prior for $\alpha$: $\alpha \sim \op{Ga}(3,3/G^{0.5})$
+    \end{itemize}
+    }
+    \onslide<1->
+  \end{column}
+  \begin{column}{.65\textwidth}
+    \begin{figure}
+      \centering
+      \includegraphics[height=.75\textheight]{alphaprior}
+    \end{figure}
+  \end{column}
+\end{columns}
+\end{frame}
+
+\begin{frame}[label=current]
+\frametitle{Selection of $Q$}
+$Q \stackrel{d}{=} \prod_{\ell=1}^p\op{N}(m_\ell,c^2_\ell)\times\op{IG}(a_\sigma,b_\sigma)$\\
+\vspace{.5cm}
+\begin{itemize}
+\pause \item $m_\ell$, $c^2_\ell$, $a_\sigma$, $b_\sigma$ selected to roughly match marginal distributions of unpooled estimates of $\beta_g$, $\sigma_$
+\pause \item Conditional conjugacy for $\tilde{\beta}_k,\; \tilde{\sigma}_k^2$
+\pause \item Diffuse distributions would lead to inefficient posterior sampling
+\end{itemize}
+\end{frame}
+
+\begin{frame}[label=current]
+\frametitle{Directed acyclic graph (DAG)}
+\centering
+\includegraphics[width=\textwidth]{my_dag_small0}
+\end{frame}
+
+\begin{frame}[label=current]
+\frametitle{DAG with augmented data}
+\includegraphics[width=\textwidth]{my_dag_small}
+\end{frame}
+
+\begin{frame}[label=current]
+\frametitle{Full conditionals}
+\begin{beamerboxesrounded}[upper=upcol,lower=lowcol,shadow=true]{Gibbs sampler}
+  \begin{enumerate}
+    \item Draw $\alpha$, $\zeta_g$ (conditionally independent)
+    \item Draw $\pi$
+    \item Draw $\tilde{\beta}_k$ (conditionally independent)
+    \item Draw $\tilde{\sigma}_k$ (conditionally independent)
+  \end{enumerate}
+\end{beamerboxesrounded}
+\end{frame}
+
+\begin{frame}[label=current]
+\frametitle{Full conditionals}
+1. Draw $\alpha$, $\zeta_g$ (conditionally independent):\\
+
+\[\alpha \sim \op{Gamma}(K + a_\alpha - 1, -\log \pi_K + b_\alpha)\]
+
+\[\zeta_g \ind \op{Categorical}\left(\hat{\pi}_1,\ldots,\hat{\pi}_K \right),\]
+with
+\[\hat{\pi}_k \propto \pi_k \op{N}(y_g;X\tilde{\beta}_k,\tilde{\sigma}_k^2 W_g^{-1})\]
+\end{frame}
+
+\begin{frame}[label=current]
+\frametitle{Full conditionals}
+2. Draw $\pi$
+
+\[\nu_k \ind \op{Be}(M_k + 1, \sum_{\ell>k}M_\ell + \alpha); k \le K-1,\]
+where $M_k$ is the number of $\zeta_g$ equal to $k$.
+
+Then $\pi_k = \nu_k \prod_\ell<k(1-\nu_k$.
+\end{frame}
+
+\begin{frame}[label=current]
+\frametitle{Full conditionals}
+3. Draw $\tilde{\beta}_k$ (conditionally independent)
+
+\[\tilde{\beta}_k \ind \op{N}(\hat{m}_k,\, \hat{C}_k),\]
+where
+\[\hat{C}_k= \left( \tilde{\sigma}^{-2}_g\sum_{g:\zeta_g=k}
+  X^\top W_g X + C^{-1} \right)^{-1},\]
+\[\mbox{ and }\hat{m}_k=\hat{C}_k \left(\sum_{g:\zeta_g=k} X^\top W_g y_g +
+      C^{-1}m \right)\]
+      
+\end{frame}
+
+\begin{frame}[label=current]
+\frametitle{Full conditionals}
+4. Draw $\tilde{\sigma}_k^2$ (conditionally independent)
+
+\[\tilde{\sigma}_k^2 \ind \op{IG}(\hat{a}_k,\hat{b}_k),\]
+where
+\[\hat{a}_k = a_{\sigma^2} + \frac{1}{2}NM_k,\mbox{ and }\]
+\[\hat{b}_k= b_{\sigma^2} + \frac{1}{2}\sum_{g:\zeta_g=k}y_g^\top W_g y_g -2 \beta_g^\top X^\top W_g y_g  +\beta_g^\top X^\top W_g X \beta_g\]
+\end{frame}
+
+
+\begin{frame}[label=current]
+\frametitle{Counts to log-cpm + precision weights}
+\scalebox{.7}{
   \begin{beamerboxesrounded}[upper=upcol,lower=lowcol,shadow=true]{Definitions}
   \[r_{gn} = \mbox{count for gene }g \mbox{, sample }n;\quad g=1,\ldots,G,\quad n=1,\ldots,N\]
   \pause\[R_n = \mbox{library size for sample }n\]
   \pause\[\log \tilde{R} = \frac{1}{N}\sum_{n=1}^N \log(R_n)\]
   \pause\[y_{gn} = \log_2 \left(\frac{r_{gn}+0.5}{R_n+1}\times 10^6\right)\]
   \pause\[\tilde{r}_g = \frac{1}{N}\sum_{n=1}^N y_{gn} + \log_2(\tilde{R}) - \log_2(10^6)\]
-  \pause\[X = \mbox{model matrix}\]
   \pause\[s_g = \sqrt{MSE}\mbox{ from ind. OLS fits of, }y_g \sim N(X\beta_g, \sigma^2_gI_{n\timesn})\]
-  \end{beamerboxesrounded}
   \onslide<1->
+  \citep{voom}  
+  \end{beamerboxesrounded}
 }
 \end{frame}
 
 \begin{frame}[label=current]
 \frametitle{Mean-variance trend}
-\includegraphics[width=\textwidth]{voom1}
+\only<1>{\includegraphics[width=\textwidth]{voom1}}
+\only<2>{\includegraphics[width=\textwidth]{voom2}}
 \end{frame}
 
 \begin{frame}[label=current]
-\frametitle{Mean-variance trend}
-\includegraphics[width=\textwidth]{voom2}
+\frametitle{Counts to log-cpm + precision weights}
+\scalebox{.6}{
+  \begin{beamerboxesrounded}[upper=upcol,lower=lowcol,shadow=true]{Definitions}
+  \[r_{gn} = \mbox{count for gene }g \mbox{, sample }n;\quad g=1,\ldots,G,\quad n=1,\ldots,N\]
+  \[R_n = \mbox{library size for sample }n\]
+  \[\log \tilde{R} = \frac{1}{N}\sum_{n=1}^N \log(R_n)\]
+  \[y_{gn} = \log_2 \left(\frac{r_{gn}+0.5}{R_n+1}\times 10^6\right)\]
+  \[\tilde{r}_g = \frac{1}{N}\sum_{n=1}^N y_{gn} + \log_2(\tilde{R}) - \log_2(10^6)\]
+  \[s_g = \sqrt{MSE}\mbox{ from ind. OLS fits of, }y_g \sim N(X\beta_g, \sigma^2_gI_{n\timesn})\]
+  \pause \[\lambda_{gn} = x_{n}\hat{\beta}_g + \log_2(R_n) - \log_2(10^6)\]
+  \pause \[w_{gn} = \widehat{lowess}(\lambda_{gn})\]
+  \onslide<1->
+  \citep{voom}  
+  \end{beamerboxesrounded}
+}
+\end{frame}
+%%%%%%%
+\section{Computation}
+
+\begin{frame}
+\frametitle{GPU computing}
+\begin{itemize}
+\item Scientific programming APIs have been developed for GPUs
+\item GPUs offer a higher degree of parallelism with lower latency than parallel CPU computing
+\item The utility of switching to GPUs is problem dependent:
+\begin{itemize}
+  \item The task must be broken into identical problems of similar size (preferably independent)
+  \item There must be enough of these to occupy most of the GPU
+  \item Typically requires more time to develop code
+\end{itemize}
+\end{itemize}
 \end{frame}
 
 \begin{frame}
-\frametitle{example - voom}
+\frametitle{Implementation overview}
+I wrote an R package to wrangle RNA-seq data and perform MCMC for the BNP method. In this implementation 
+\begin{itemize}
+\item Parallel updates are performed on conditionally independent model parameters
+\item Prerequisite computations are accelerated by the use of
+\begin{itemize}
+  \item Parallel reductions
+  \item Parallel scans
+  \item Optimized linear algebra routines, both global (large matrix multiplication) and multi-threaded (solving linear systems)
+  \item Custom multi-threaded operations (ex. Cholesky decomposition)
+\end{itemize}
+\end{itemize}
 \end{frame}
 
 \begin{frame}
-\frametitle{Model matrix}
-\end{frame}
-
-\begin{frame}
-\frametitle{Gene-specific parameters}
-\end{frame}
-\section{Model}
-
-
-
-\begin{frame}
-\frametitle{BNP model}
-\end{frame}
-
-\begin{frame}
-\frametitle{interpretation of $\alpha$}
-\end{frame}
-
-\begin{frame}
-\frametitle{choice of $Q$}
-\end{frame}
-
-\begin{frame}
-\frametitle{Gibbs sampler 1}
-\end{frame}
-
-\begin{frame}
-\frametitle{Gibbs sampler 2}
-\end{frame}
-
-\begin{frame}
-\frametitle{Computational feasibility}
+\frametitle{Example of implementation}
+%\item draw_zeta
+%\item weights
+%\item mulinomial draw
 \end{frame}
 
 \begin{frame}
 \frametitle{Running time}
 \end{frame}
+
+
 
 \section{Case study - heterosis in maize}
 
