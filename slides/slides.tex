@@ -1,5 +1,5 @@
-\documentclass{beamer}
-\includeonlyframes{current}
+\documentclass[handout]{beamer}
+% \includeonlyframes{current}
 \setbeamertemplate{navigation symbols}{}
 % \setbeamertemplate{footline}[frame number]
 
@@ -8,6 +8,9 @@
 
 %includes
 \usepackage{amsmath, bbm, blkarray}
+\makeatletter
+\let\BA@quicktrue\BA@quickfalse
+\makeatother
 \usepackage{graphicx}
 \usepackage{natbib}
 % \usepackage{tikz}
@@ -90,9 +93,8 @@
 %%% Section 0: Data problem
 \section[GE/RNA-seq]{Gene expression and RNA-seq}
 
-\begin{frame}%%[label=current]
+\begin{frame}%[label=current]
   \frametitle{``Gene expression" $=$ Transcript abundance}
-  {\scriptsize \citep[\textit{Statistical Analysis of Next Generation Sequencing Data}]{datta2014}}
   The Central Dogma of Biology says:
   \begin{itemize}
     \pause\item DNA encodes all biological information
@@ -100,20 +102,21 @@
     \pause\item messenger RNA (mRNA) conveys ``transcripts" of these directions to the ribosomes where they are assembled 
   \end{itemize}
   \pause Transcript abundance is proxy for gene expression.
+  \onslide<1->
+  {\scriptsize \citep[\textit{Statistical Analysis of Next Generation Sequencing Data}]{datta2014}}
 \end{frame}
 
 \begin{frame}%%[label=current]
 \frametitle{Gene expression profiling - RNA-seq}
-  \pause RNA-seq is:
+  RNA-seq is:
   \vspace{.5cm}
   \begin{itemize}
-    \pause \item "whole transcriptome shotgun sequencing"
     \pause \item simultaneously measurement of transcript abundance of thousands of genes
-    \pause \item sequencing is high resolution
+    \pause \item high resolution
   \end{itemize}
-  
+
   \vspace{.5cm}
-  Stages of RNA-seq data production:
+  \pause Stages of RNA-seq data production:
   \vspace{.5cm}
   \begin{itemize}
     \pause \item isolate mRNA
@@ -137,18 +140,17 @@
         {\scriptsize \url{https://archive.news.iastate.edu/news/2006/may/vigor.shtml}}
       \end{table}
     \end{column}
-    
     \begin{column}{.7\textwidth}
     \centering
     \scalebox{.9}{
       \begin{beamerboxesrounded}[upper=upcol,lower=lowcol,shadow=true]{Heterosis}
         \begin{itemize}
-          \pause\item Heterosis $=$ ``Hybrid vigor"
+          \item Heterosis $=$ ``Hybrid vigor"
           \pause \item Superior traits in hybrid offpring compared with inbred parents
           \pause \item Want to identify genetic links
         \end{itemize}
         \vspace{.5cm}
-        \pause average hybrid expression more extreme than parental expression
+        \pause Gene expression heterosis: average hybrid expression more extreme than parental expression
         \begin{itemize}
           \pause \item high-parent heterosis (HPH):\\low parent $<$ high parent $<$ hybrid
           \pause \item low-parent heterosis (LPH):\\ hybrid $<$ low parent $<$ high parent
@@ -162,14 +164,14 @@
 
 \begin{frame}%[label=current]
   \frametitle{Identifying heterosis: statistical approach}
-  Problem statement: identify genes for which either
+  Hypotheses:
   {\small
   \begin{enumerate}
-    \pause \item $H_{HPH,g}: (\mbox{hybrid mean expression} > \mbox{high-parent mean expression)}$\\ is likely \pause or
+    \item $H_{HPH,g}: (\mbox{hybrid mean expression} > \mbox{high-parent mean expression)}$\\ is likely \pause or
     \item $H_{LPH,g}: (\mbox{hybrid mean expression} < \mbox{low-parent mean expression)}$\\ is likely.
   \end{enumerate}
   }
-  
+
   \begin{itemize}
     \pause \item Null hypothesis testing is problematic; p-values not uniform under null, so methods for multiple correction do not apply
     \pause \item Bayesian methods allow direct estimation of, e.g., $Pr(H_{HPH,g} \mbox{ is true})$
@@ -208,7 +210,7 @@
           GRMZM2G306345 & HPH & 1431 & 1199 & 1235 & 1569 & 2055 & 1652 & 2149 & 2168 & 2415 & 1815 & 2142 & 2369 & 1127 & 987 & 1672 & 1518 \\
           GRMZM2G149543 &  LPH &  86 &  62 & 131 & 128 &  52 &  43 &  85 &  95 &  60 &  23 &  63 &  74 &  85 &  71 & 178 & 205 \\
           GRMZM2G079613 &  mixed & 122 &  98 & 146 & 150 &  73 &  77 & 159 & 127 & 178 & 122 & 259 & 252 & 108 & 103 & 207 & 171 \\
-          AC194005.3\_FG004 &  neither &  30 &  31 &  42 &  48 &  17 &  15 &  22 &  26 &  16 &  13 &  16 &  22 &   2 &   2 &   2 &   2 \\ 
+          AC194005.3\_FG004 &  neither &  30 &  31 &  42 &  48 &  17 &  15 &  22 &  26 &  16 &  13 &  16 &  22 &   2 &   2 &   2 &   2 \\
           \vdots & & & & & & & & & & & & & & & & &\\ \midrule
           Raw total && 1.2E7 & 1.0E7  & 0.9E7  & 1.0E7 & 1.1E7 & 1.0E7 &1.0E7  &1.0E7 &1.1E7 &1.0E7 &1.0E7  &1.0E7 &1.0E7  &0.9E7 &1.0E7  &1.0E7\\
           \bottomrule
@@ -231,20 +233,22 @@
   Approach of \citep{voom}:
   \begin{itemize}
     \item Linear model for log counts per million (log-cpm)
-    \item Nonparametric correction for mean-variance trend (precision weights, $w_{gn}$)
-    \item $r_{gn} = \mbox{count for gene }g \mbox{, sample }n;\quad g=1,\ldots,G,\quad n=1,\ldots,N$
-    \item $R_n = \mbox{library size for sample }n$
-    \item $y_{gn} = \log_2 \left(\frac{r_{gn}+0.5}{R_n+1}\times 10^6\right)$
-    \item Model: $y_{gn} = x_n\beta_g + \epsilon_{gn};\; \epsilon_{gn} \ind \op{N}(0,\sigma^2_g/w_{gn})$
+    \pause \item Nonparametric correction for mean-variance trend (precision weights)
+    \pause \item $r_{gn} = \mbox{count for gene }g \mbox{, sample }n;\quad g=1,\ldots,G,\quad n=1,\ldots,N$
+    \pause \item $R_n = \mbox{library size for sample }n$
+    \pause \item $y_{gn} = \log_2 \left(\frac{r_{gn}+0.5}{R_n+1}\times 10^6\right)$
+    \pause \item Model: $y_{gn} = x_n^\top\beta_g + \epsilon_{gn};\; \epsilon_{gn} \ind \op{N}(0,\sigma^2_g/w_{gn})$, \pause where
+    \item $x_n^\top$ is the row of model matrix $X$ for sample $n$, and $w_{gn}$ is the precision weight.
   \end{itemize}
 \end{frame}
 
 \begin{frame}%%[label=current]
   \frametitle{Gene-specific parameters}
-  \begin{beamerboxesrounded}[upper=upcol,lower=lowcol,shadow=true]{model matrix} 
+  \begin{beamerboxesrounded}[upper=upcol,lower=lowcol,shadow=true]{model matrix}
     \centering
-    \scalebox{.6}{
-      \begin{equation*} X=
+    \scriptsize
+    % \scalebox{.6}{
+      \[
         \begin{blockarray}{rrrrrr}
           \mbox{Sample} & \mbox{intercept} & \mbox{parental HD} & \mbox{hybrid} & \mbox{hybrid HD} & \mbox{flow cell}\\
           \begin{block}{r(rrrrr)}
@@ -252,22 +256,22 @@
             \mbox{B73}_2  & 1 &  1 & 0 & 0 & 0\\
             \mbox{B73}_3  & 1 &  1 & 0 & 0 & 1\\
             \mbox{B73}_4  & 1 &  1 & 0 & 0 & 1\\
-            \mbox{B73}\times\mbox{Mo17}_1  & 1 &  0 & 1 & 1 & 0\\
-            \mbox{B73}\times\mbox{Mo17}_2  & 1 &  0 & 1 & 1 & 0\\
-            \mbox{B73}\times\mbox{Mo17}_3  & 1 &  0 & 1 & 1 & 1\\
-            \mbox{B73}\times\mbox{Mo17}_4  & 1 &  0 & 1 & 1 & 1\\
-            \mbox{Mo17}\times\mbox{B73}_1  & 1 &  0 & 1 & -1 & 0\\
-            \mbox{Mo17}\times\mbox{B73}_2  & 1 &  0 & 1 & -1 & 0\\
-            \mbox{Mo17}\times\mbox{B73}_3  & 1 &  0 & 1 & -1 & 1\\
-            \mbox{Mo17}\times\mbox{B73}_4  & 1 &  0 & 1 & -1 & 1\\
+            \mbox{B73}\times \mbox{Mo17}_1  & 1 &  0 & 1 & 1 & 0\\
+            \mbox{B73}\times \mbox{Mo17}_2  & 1 &  0 & 1 & 1 & 0\\
+            \mbox{B73}\times \mbox{Mo17}_3  & 1 &  0 & 1 & 1 & 1\\
+            \mbox{B73}\times \mbox{Mo17}_4  & 1 &  0 & 1 & 1 & 1\\
+            \mbox{Mo17}\times \mbox{B73}_1  & 1 &  0 & 1 & -1 & 0\\
+            \mbox{Mo17}\times \mbox{B73}_2  & 1 &  0 & 1 & -1 & 0\\
+            \mbox{Mo17}\times \mbox{B73}_3  & 1 &  0 & 1 & -1 & 1\\
+            \mbox{Mo17}\times \mbox{B73}_4  & 1 &  0 & 1 & -1 & 1\\
             \mbox{Mo17}_1 & 1 & -1 & 0 & 0 & 0\\
             \mbox{Mo17}_2 & 1 & -1 & 0 & 0 & 0\\
             \mbox{Mo17}_3 & 1 & -1 & 0 & 0 & 1\\
-            \mbox{Mo17}_4 & 1 & -1 & 0 & 0 & 1
+            \mbox{Mo17}_4 & 1 & -1 & 0 & 0 & 1\\
           \end{block}
         \end{blockarray}
-      \end{equation*}
-    }
+      \]
+    % }
   \end{beamerboxesrounded}
 \end{frame}
 
@@ -277,16 +281,16 @@
     \includegraphics[width=.8\textwidth]{pairs1}\\
   }
 \end{frame}
-  
+
 \begin{frame}%[label=current]
   \frametitle{Rationale for BNP}
-  Idea: $\beta_g \ind \mathcal{P},\quad \mathcal{P} ~ F$
-  
-  Argument for Bayesian non-parametric (BNP) model:
+  Idea: $\beta_g \ind \mathcal{P},\quad \mathcal{P} \sim F$
+
+  \pause Argument for Bayesian non-parametric (BNP) model:
   \begin{itemize}
     \item Hierarchical model to borrow information
-    \item Avoid unrealistic model assumptions
-    \item General solution; not case specific
+    \pause \item Avoid unrealistic model assumptions, i.e. $\mathcal{P}$ belongs to parametric family
+    \pause \item General solution --- not case specific
   \end{itemize}
 \end{frame}
 
@@ -296,18 +300,14 @@
 \begin{frame}%%[label=current]
   \centering
   \scalebox{.8}{
-    \begin{beamerboxesrounded}[upper=upcol,lower=lowcol,shadow=true]{Stick-breaking representation}
-      $\mathcal{P}$ = a random probability measure$\\
+    \begin{beamerboxesrounded}[upper=upcol,lower=lowcol,shadow=true]{Stick-breaking characterization of DP}
+      $\mathcal{P}$ = a random probability measure\\
       \pause $\mathcal{P} \sim \op{DP}(\alpha Q) \implies$
       \begin{itemize}
         \pause \item $\mathcal{P} \stackrel{d}{=} \sum_{k=1}^\infty \pi_k \delta_{\tilde{\mu}_k},\;$ where $\delta_{\cdot}$ is the Dirac delta function, \pause
         \item $\tilde{\mu}_k \ind Q$ \pause and
         \item $\frac{\pi_k}{1-\sum_{\ell<k} \pi_\ell}=\nu_k \ind \op{Be}(1,\alpha)$
       \end{itemize}
-      
-      \vspace{.5cm}
-      
-      \pause Finite approximation: choose large $K$, set $\nu_K=1$, implying, for $\ell>K$, $\pi_\ell=0$.\\
       \onslide<1->
       \citep{sethuraman,ishwaran2000}
     \end{beamerboxesrounded}
@@ -315,50 +315,49 @@
 \end{frame}
 
 \begin{frame}%%[label=current]
-  \frametitle{DP as infinite mixture ($Q=\op{N}(0,1)$)}
-  \scalebox{.7}{
+  \frametitle{Draws from $DP(\alpha Q)$; with $Q=\op{N}(0,1)$}
+  \begin{columns}
+    \column{\dimexpr\paperwidth-10pt}
     \begin{table}
       \centering
+      \scriptsize
       \begin{tabular}{crl}
-        \includegraphics[height=.4\textwidth]{dp1}& \multirowcell{2}{\large $Q=$\\$\alpha=$} & \multirowcell{2}{\large ``prior guess" \\ ``prior sample size"}\\
-        \pause\includegraphics[height=.4\textwidth]{dp2}&&\\
+        \includegraphics[height=.25\textwidth]{dp1}& \multirowcell{2}{ $Q=$\\$\alpha =$} & \multirowcell{2}{ ``prior guess" \\ ``prior sample size"}\\
+        \pause\includegraphics[height=.25\textwidth]{dp2}&&\\
       \end{tabular}
     \end{table}
     \onslide<1->
-  }
+  \end{columns}
 \end{frame}
 
 \begin{frame}%%[label=current]
   \frametitle{Example: DP mixture}
   {
-    \small Suppose we observe $y_{gn};\; g=1,\ldots,200,\; n=1,\ldots,3$ where\\
-    \pause\[ y_{gn} \sim \op{N}(\mu_g,\sigma^2),\mbox{ with }\{\mu_g\},\sigma_g\mbox{ unknown.}\]
+    \small Suppose $ y_{gn} \sim \op{N}(\mu_g,\sigma^2),\mbox{ with }\{\mu_g\},\sigma_g\mbox{ unknown}; \; g=1,\ldots,200,\; n=1,\ldots,3$.\\
     \pause $\bar{y}_{g\cdot}$ (unbiased for $\mu_g$) are shown below:\\
     {
       \centering
       \includegraphics[width=.9\textwidth]{samplemeans_ie}
     }\\
-  
+
     \pause $\mu_g$ were in fact simulated from $1/3\op{N}(-4,1^2) + 1/3\op{N}(0,1^2) + 1/3\op{N}(4,1^2)$.
   }
 \end{frame}
 
-\begin{frame}%%[label=current]
+\begin{frame}%[label=current]
   \frametitle{Example: DP as random effects model}
+  \footnotesize
   {
-    \footnotesize
-    {
-      \centering \includegraphics[width=.9\textwidth]{samplemeans_ie}
-    }
-    Consider these models for $\mu_g$:
-    \begin{enumerate}
-      \pause \item (Normal) $\mu_g \ind N(\eta, \tau^2)$\\
-      with prior distributions $\eta \sim N(0, 5^2)$, $\tau^2 \sim \op{IG}(0.5,0.5)$
-      \pause \item (Correct) $\mu_g \ind \pi_1 \op{N}(\eta_1, \tau^2)+\pi_2 \op{N}(\eta_2, \tau^2_2) + \pi_3 \op{N}(\eta_3,\tau^2)$ with prior distributions \\
-      $\eta_j \ind N(0,5^2)$, $\tau^2 \sim $\op{IG}(0.5,0.5)$ and $\pi \sim \op{Dir}(1,1,1)$, subject to $\eta_1<\eta_2<\eta_3$.
-      \pause \item (DP) $\mu_g \ind \mathcal{P},\; P \sim DP(\alpha Q)$ with $Q \stackrel{d}{=}\op{N}(0,5^2)$, and prior $\alpha \sim \op{Ga}(3,3/14.2)$
-    \end{enumerate}
+    \centering \includegraphics[width=.9\textwidth]{samplemeans_ie}
   }
+  Consider these models for $\mu_g$:
+  \begin{enumerate}
+    \pause \item (Normal) $\mu_g \ind N(\eta, \tau^2)$\\
+      with prior distributions $\eta \sim N(0, 5^2)$, $\tau^2 \sim \op{IG}(0.5,0.5)$
+    \pause \item (Correct) $\mu_g \ind \pi_1 \op{N}(\eta_1, \tau^2)+\pi_2 \op{N}(\eta_2, \tau^2) + \pi_3 \op{N}(\eta_3,\tau^2)$ with prior distributions \\
+    $\eta_j \ind N(0,5^2)$, $\tau^2 \sim $\op{IG}(0.5,0.5)$ and $\pi \sim \op{Dir}(1,1,1)$, subject to $\eta_1 < \eta_2 < \eta_3$.
+    \pause \item (DP) $\mu_g \ind \mathcal{P},\; P \sim DP(\alpha Q)$ with $Q \stackrel{d}{=} \op{N}(0,5^2)$, and prior $\alpha \sim \op{Ga}(3,3/14.2)$
+  \end{enumerate}
 \end{frame}
 
 % \begin{frame}%%[label=current]
@@ -417,33 +416,28 @@
 \end{frame}
 
 \begin{frame}%%[label=current]
-  \frametitle{Dirichlet process (DP)}
+  \frametitle{Additional model specifications}
   \centering
-  \scalebox{.8}{
-    \begin{beamerboxesrounded}[upper=upcol,lower=lowcol,shadow=true]{Stick-breaking representation \citep{sethuraman}:}
-      $\mathcal{P} \sim \op{DP}(\alpha Q)$ \pause $\implies$
+    \begin{beamerboxesrounded}[upper=upcol,lower=lowcol,shadow=true]{For computational purposes:}
       \begin{itemize}
-        \item $\mathcal{P} \stackrel{d}{=} \sum_{k=1}^\infty \pi_k \delta_{(\tilde{\beta}_k^\top,\tilde{\sigma}^2_k)},\quad$ where $\delta_{}$ is the Dirac delta function \pause with
-        \item $(\tilde{\beta}_k^\top,\tilde{\sigma}^2_k) \ind Q$ \pause and
         \item $\nu_k = \frac{\pi_k}{1-\sum_{\ell<k} \pi_\ell} \ind \op{Be}(1,\alpha)$, $k<K-1$.
-        \item $\nu_K = 1 \implies \pi_\ell =0$ for $\ell>K$.
+        \pause \item $\nu_K = 1 \implies \pi_\ell =0$ for $\ell>K$.
         \pause \item Define $\zeta_g \in \{1,\ldots,K\}$, so $(\beta_g^\top,\sigma_g) = (\tilde{\beta}_{\zeta_g},\tilde{\sigma}_{\zeta_g}^2)$ \pause so that
         \item $\zeta_g \ind \op{Categorical}(\pi_1,\ldots,\pi_K)$ \pause and
-        \item $y_g \ind \op{N}(X\tilde{\beta}_{\zeta_g},\tilde{\sigma}_{\zeta_g}^2 W_g^{-1})$. 
+        \item $y_g \ind \op{N}(X\tilde{\beta}_{\zeta_g},\tilde{\sigma}_{\zeta_g}^2 W_g^{-1})$.
       \end{itemize}
     \end{beamerboxesrounded}
     \onslide<1->
-  }
 \end{frame}
 
 \begin{frame}%%[label=current]
   \frametitle{Prior distibution for $\alpha$}
     \begin{columns}
     \begin{column}{.5\textwidth}
-      {\footnotesize 
+      {\footnotesize
       \begin{itemize}
         \pause \item $U=$ number of unique $\zeta_g$
-        \pause \item $\op{E}(U) = \sum_{g=1}^G \alpha/(g + \alpha - 1)$.
+        \pause \item $\op{E}(U) = f(G,\alpha) = \sum_{g=1}^G \alpha/(g + \alpha - 1)$.
         \pause \item Prior for $\alpha$: $\alpha \sim \op{Ga}(3,3/G^{0.5})$
       \end{itemize}
       }
@@ -461,13 +455,13 @@
 \begin{frame}%%[label=current]
   \frametitle{Selection of $Q$}
   $Q \stackrel{d}{=} \prod_{\ell=1}^p\op{N}(m_\ell,c^2_\ell)\times\op{IG}(a_\sigma,b_\sigma)$\\
-  
+
   \vspace{.5cm}
-  
+
   \begin{itemize}
     \pause \item $m_\ell$, $c^2_\ell$, $a_\sigma$, $b_\sigma$ selected to roughly match marginal distributions of unpooled estimates of $\beta_g$, $\sigma_$
     \pause \item Conditional conjugacy for $\tilde{\beta}_k,\; \tilde{\sigma}_k^2$
-    \pause \item Diffuse distributions would lead to inefficient posterior sampling
+    \pause \item Diffuse distributions are informative
   \end{itemize}
 \end{frame}
 
@@ -497,9 +491,9 @@
 \begin{frame}%%[label=current]
   \frametitle{Full conditionals}
   1. Draw $\alpha$, $\zeta_g$ (conditionally independent):\\
-  
+
   \[\alpha \sim \op{Gamma}(K + a_\alpha - 1, -\log \pi_K + b_\alpha)\]
-  
+
   \[\zeta_g \ind \op{Categorical}\left(\hat{\pi}_{g1},\ldots,\hat{\pi}_{gK} \right),\]
   with
   \[\hat{\pi}_{gk} \propto \pi_k \op{N}\left( y_g;X\tilde{\beta}_k,\tilde{\sigma}_k^2 W_g^{-1} \right)\]
@@ -508,17 +502,17 @@
 \begin{frame}%%[label=current]
   \frametitle{Full conditionals}
   2. Draw $\pi$
-  
+
   \[\nu_k \ind \op{Be}(M_k + 1, \sum_{\ell>k}M_\ell + \alpha); k < K,\]
   where $M_k$ is the number of $\zeta_g$ equal to $k$.
-  
+
   Then $\pi_k = \nu_k \prod_\ell<k(1-\nu_k$.
 \end{frame}
 
 \begin{frame}%%[label=current]
   \frametitle{Full conditionals}
   3. Draw $\tilde{\beta}_k$ (conditionally independent)
-  
+
   \[\tilde{\beta}_k \ind \op{N}(\hat{m}_k,\, \hat{C}_k),\]
   where
   \[\hat{C}_k= \left( \tilde{\sigma}^{-2}_g\sum_{g:\zeta_g=k}
@@ -530,7 +524,7 @@
 \begin{frame}%%[label=current]
   \frametitle{Full conditionals}
   4. Draw $\tilde{\sigma}_k^2$ (conditionally independent)
-  
+
   \[\tilde{\sigma}_k^2 \ind \op{IG}(\hat{a}_k,\hat{b}_k),\]
   where
   \[\hat{a}_k = a_{\sigma^2} + \frac{1}{2}NM_k,\mbox{ and }\]
@@ -546,7 +540,7 @@
       \pause\[\tilde{r}_g = \frac{1}{N}\sum_{n=1}^N y_{gn} + \log_2(\tilde{R}) - \log_2(10^6)\]
       \pause\[s_g = \sqrt{MSE}\mbox{ from ind. OLS fits of, }y_g \sim N(X\beta_g, \sigma^2_gI_{n\timesn})\]
       \onslide<1->
-      \citep{voom}  
+      \citep{voom}
     \end{beamerboxesrounded}
   }
 \end{frame}
@@ -567,7 +561,7 @@
       \pause \[\lambda_{gn} = x_{n}\hat{\beta}_g + \log_2(R_n) - \log_2(10^6)\]
       \pause \[w_{gn} = \widehat{lowess}(\lambda_{gn})\]
       \onslide<1->
-      \citep{voom}  
+      \citep{voom}
     \end{beamerboxesrounded}
   }
 \end{frame}
@@ -607,7 +601,7 @@
 \begin{frame}%[label=current]
   \frametitle{Example: update $\zeta_g$}
   Outcome: Overwrite current value of $\zeta_g$ with new values drawn from their full conditionals, i.e. $\op{Categorical}(\hat{\pi}_{g1},\ldots,\hat{\pi}_{gK})$.
-  
+
   \vspace{.7cm}
   Outline of GPU implementation:
   \small
@@ -623,7 +617,7 @@
   \end{enumerate}
 \end{frame}
 
-\begin{frame}[label=current]
+\begin{frame}%[label=current]
   \frametitle{Parallel scan}
   \begin{figure}
     \centering
@@ -636,7 +630,7 @@
 \begin{frame}%[label=current]
   \frametitle{Evaluation of running time}
   Critical question: On average, how long to get one effective sample?
-  
+
   Simulation study:
   \begin{itemize}
     \item Dimensions manipulated: G, K, p
@@ -653,7 +647,7 @@
 
 \begin{frame}%[label=current]
   \frametitle{Running time - simulation study}
-  % Results of fitting 
+  % Results of fitting
   % \[\log_2(\mbox{seconds}) = \mbox{intercept} + \log_2(K)\gamma_1 +  \log_2(G)\gamma_2 +  \log_2(p)\gamma_3 + \epsilon,\]
   % \[\op{E}(\epsilon)=0$\]
   % \centering
@@ -661,11 +655,11 @@
     \centering
     \begin{tabular}{ccccc}
       \hline
-      factor &mult. effect& Est. & lower 95\% & upper 95\% \\ 
+      factor &mult. effect& Est. & lower 95\% & upper 95\% \\
       \hline
-      K & $2^{\gamma_1}$ & 3.3 & 2.8 & 3.8 \\ 
-      G & $2^{\gamma_2}$ & 1.2 & 1.0 & 1.4 \\ 
-      p & $2^{\gamma_3}$ & 0.5 & 0.4 & 0.6 \\ 
+      K & $2^{\gamma_1}$ & 3.3 & 2.8 & 3.8 \\
+      G & $2^{\gamma_2}$ & 1.2 & 1.0 & 1.4 \\
+      p & $2^{\gamma_3}$ & 0.5 & 0.4 & 0.6 \\
       \hline
     \end{tabular}
   \end{table}
@@ -728,7 +722,7 @@
 \includegraphics[width=\textwidth]{ss1-auc}
 \end{frame}
 
-\begin{frame}[label=current]
+\begin{frame}%[label=current]
 \includegraphics[width=\textheight]{ss1-mspe}
 \end{frame}
 
@@ -752,23 +746,23 @@
   \end{itemize}
 \end{frame}
 
-\begin{frame}[label=current]
+\begin{frame}%[label=current]
   \includegraphics[width=\textwidth]{aud-ss2}
 \end{frame}
 
-\begin{frame}[label=current]
+\begin{frame}%[label=current]
   \includegraphics[width=\textwidth]{overlap-ss2-bnp}
 \end{frame}
 
-\begin{frame}[label=current]
+\begin{frame}%[label=current]
   \includegraphics[width=\textwidth]{overlap-ss2-deseq}
 \end{frame}
 
-\begin{frame}[label=current]
+\begin{frame}%[label=current]
   \includegraphics[width=.85\textwidth]{ss2-mspe}
 \end{frame}
 
-\begin{frame}[label=current]
+\begin{frame}%[label=current]
   \frametitle{Definition of HPH, LPH}
   Recall that:
   {
@@ -796,17 +790,17 @@
   }
 \end{frame}
 
-\begin{frame}[label=current]
+\begin{frame}%[label=current]
   \frametitle{Calibration of heterosis probabilities}
   \includegraphics[width=.9\textwidth]{calib-ss2}
 \end{frame}
 
-\begin{frame}[label=current]
+\begin{frame}%[label=current]
 \frametitle{HPH and LPH probabilities by \citet{paschold} classification}
 \includegraphics[width=\textwidth]{orig-compare}
 \end{frame}
 
-\begin{frame}[label=current]
+\begin{frame}%[label=current]
   \begin{columns}
       \column{\dimexpr\paperwidth-10pt}
     \frametitle{``Shrinkage" of parameter estimates}
@@ -814,7 +808,7 @@
   \end{columns}
 \end{frame}
 
-\begin{frame}[label=current]
+\begin{frame}%[label=current]
   \frametitle{Comparison to results of \citet{landau}}
   Low-parent Heterosis (B73$\times$Mo17)
   \begin{columns}
@@ -839,6 +833,15 @@
       \end{table}
     }
   \end{columns}
+\end{frame}
+
+\begin{frame}
+\frametitle{Summary}
+  \begin{itemize}
+    \item Fully Bayesian, hierarchical model
+    \item Nonparameteric, allows for general model matrix
+    \item Made computationally feasible by the massive parallelism afforded by GPUs
+  \end{itemize}
 \end{frame}
 
 \begin{frame}[allowframebreaks]
