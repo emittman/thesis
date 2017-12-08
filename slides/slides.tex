@@ -753,19 +753,92 @@
 \end{frame}
 
 \begin{frame}[label=current]
-\includegraphics[width=\textwidth]{aud-ss2}
+  \includegraphics[width=\textwidth]{aud-ss2}
 \end{frame}
 
 \begin{frame}[label=current]
-\includegraphics[width=\textwidth]{overlap-ss2-bnp}
+  \includegraphics[width=\textwidth]{overlap-ss2-bnp}
 \end{frame}
 
 \begin{frame}[label=current]
-\includegraphics[width=\textwidth]{overlap-ss2-deseq}
+  \includegraphics[width=\textwidth]{overlap-ss2-deseq}
 \end{frame}
 
 \begin{frame}[label=current]
-\includegraphics[width=.85\textwidth]{ss2-mspe}
+  \includegraphics[width=.85\textwidth]{ss2-mspe}
+\end{frame}
+
+\begin{frame}[label=current]
+  \frametitle{Definition of HPH, LPH}
+  Recall that:
+  {
+    \small
+    \begin{enumerate}
+      \pause \item $H_{HPH,g}: \mbox{hybrid mean expression} > \mbox{high-parent mean expression}$
+      \pause \item $H_{LPH,g}: \mbox{hybrid mean expression} < \mbox{low-parent mean expression}$
+    \end{enumerate}
+  }
+    \pause Since there are two hybrids, B73$\times$Mo17 and Mo17$\times$B73, this translates to:
+  {
+    \small
+    \begin{enumerate}
+      \item
+      \begin{itemize}
+        \pause \item$H_{HPH,\mbox{B73\times$Mo17},g}:\; \mbox{hybrid} + \mbox{hybrid HD} > |\mbox{parental HD}|$
+        \pause \item$H_{HPH,\mbox{Mo17$\times$B73},g}:\; \mbox{hybrid} - \mbox{hybrid HD} > |\mbox{parental HD}|$
+      \end{itemize}
+      \item
+      \begin{itemize}
+        \pause \item$H_{LPH,\mbox{B73$\times$Mo17},g}:\; \mbox{hybrid} + \mbox{hybrid HD} < |\mbox{parental HD}|$
+        \pause \item$H_{LPH,\mbox{Mo17$\times$B73},g}:\; \mbox{hybrid} - \mbox{hybrid HD} < |\mbox{parental HD}|$
+      \end{itemize}
+    \end{enumerate}
+  }
+\end{frame}
+
+\begin{frame}[label=current]
+  \frametitle{Calibration of heterosis probabilities}
+  \includegraphics[width=.9\textwidth]{calib-ss2}
+\end{frame}
+
+\begin{frame}[label=current]
+\frametitle{HPH and LPH probabilities by \citet{paschold} classification}
+\includegraphics[width=\textwidth]{orig-compare}
+\end{frame}
+
+\begin{frame}[label=current]
+  \begin{columns}
+      \column{\dimexpr\paperwidth-10pt}
+    \frametitle{``Shrinkage" of parameter estimates}
+    \includegraphics[width=.95\textwidth]{shrinkage}
+  \end{columns}
+\end{frame}
+
+\begin{frame}[label=current]
+  \frametitle{Comparison to results of \citet{landau}}
+  Low-parent Heterosis (B73$\times$Mo17)
+  \begin{columns}
+    \column{\dimexpr\paperwidth-10pt}
+    \scalebox{.8}{
+      \begin{table}
+        \centering
+        \begin{tabular}{rrrrrrr|r}
+          &  &\multicolumn{6}{c}{Landau and Niemi (2016)}\\
+          \toprule
+          &  & [0,0.05] & (0.05,0.15] & (0.15,0.85] & (0.85,0.95] & (0.95,1] & total \\
+          \midrule
+          \multirow{6}{*}{BNP} & [0,0.05]    & 0.283 & 0.083 & 0.116 & 0.001 & 0.000 & 0.483 \\
+                               & (0.05,0.15] & 0.017 & 0.037 & 0.129 & 0.003 & 0.001 & 0.186 \\
+                               & (0.15,0.85] & 0.009 & 0.025 & 0.254 & 0.017 & 0.009 & 0.313 \\
+                               & (0.85,0.95] & 0.000 & 0.000 & 0.007 & 0.002 & 0.002 & 0.011 \\
+                               & (0.95,1]    & 0.000 & 0.000 & 0.003 & 0.001 & 0.003 & 0.007 \\
+          \midrule
+                               & total       & 0.308 & 0.145 & 0.508 & 0.022 & 0.016 & 1.000 \\
+          \bottomrule
+        \end{tabular}
+      \end{table}
+    }
+  \end{columns}
 \end{frame}
 
 \begin{frame}[allowframebreaks]
@@ -773,7 +846,6 @@
   \frametitle{References}
   \bibliographystyle{agsm}
   \bibliography{../mybib}
-
 \end{frame}
 
 \begin{frame}%[label=current]
