@@ -86,6 +86,12 @@
 
 \frame{\titlepage}
 
+\begin{frame}%[label=current]
+  \frametitle{Acknowledgment}
+  \small%
+  This research was supported by National Institute of General Medical Sciences (NIGMS) of the National Institutes of Health and the joint National Science Foundation / NIGMS Mathematical Biology Program under award number R01GM109458. The content is solely the responsibility of the authors and does not necessarily represent the official views of the National Institutes of Health or the National Science Foundation.
+\end{frame}
+
 % \begin{frame}
 % \frametitle{Table of Contents}
 % \tableofcontents
@@ -95,13 +101,12 @@
 \begin{frame}
 Outline:
 \begin{itemize}
-  \item Intro to GE and RNA-seq data
-  \item \citet{paschold} data, heterosis problem
-  \item Review of Dirichlet process
-  \item BNP model
-  \item Gibbs sampler/implementation
-  \item Simulation studies
-  \item Results
+  \item Gene expression and RNA-seq
+  \item Motivating example - heterosis
+  \item Intro to Dirichlet processes
+  \item BNP model for gene expression
+  \item Computation and implementation details
+  \item Case study
 \end{itemize}
 \end{frame}
 
@@ -302,7 +307,7 @@ Outline:
   \frametitle{Modeling approach}
   \begin{itemize}
            \item Hierarchical model to borrow information
-    \pause \item Avoid unrealistic model assumptions, i.e. $\mathcal{P}$ belongs to parametric family
+    \pause \item Avoid unrealistic model assumptions
     \pause \item General solution --- not case specific
     \pause \item $(\beta_g^\top,\sigma^2_g) \ind \mathcal{P},\quad \mathcal{P} \sim \op{DP}$
   \end{itemize}
@@ -374,26 +379,9 @@ Outline:
 \end{frame}
 
 \begin{frame}%%[label=current]
-  \frametitle{Additional model specifications}
+  \frametitle{Directed acyclic graph (DAG)}
   \centering
-    \begin{beamerboxesrounded}[upper=upcol,lower=lowcol,shadow=true]{For computational purposes:}
-      \begin{itemize}
-        \item $\nu_k = \frac{\pi_k}{1-\sum_{\ell<k} \pi_\ell} \ind \op{Be}(1,\alpha)$, $k<K$.
-        \pause \item $\nu_K = 1 \implies \pi_\ell =0$ for $\ell>K$.
-        \pause \item Define $\zeta_g \in \{1,\ldots,K\}$, so $(\beta_g^\top,\sigma_g^2) = (\tilde{\beta}_{\zeta_g},\tilde{\sigma}_{\zeta_g}^2)$ \pause 
-      \end{itemize}
-      Note that:
-      \begin{itemize}
-        \item $\zeta_g \ind \op{Categorical}(\pi_1,\ldots,\pi_K)$ \pause and
-        \item $y_g \ind \op{N}(X\tilde{\beta}_{\zeta_g},\tilde{\sigma}_{\zeta_g}^2 W_g^{-1})$.
-        \item $(\tilde{\beta}_k^\top,\tilde{\sigma}^2_k) \ind Q$.
-      \end{itemize}
-      
-      \onslide<1->
-      
-      {\scriptsize \citep{ishwaran2000}}
-    \end{beamerboxesrounded}
-    \onslide<1->
+  \includegraphics[width=\textwidth]{my_dag_small0}
 \end{frame}
 
 \begin{frame}%%[label=current]
@@ -403,7 +391,7 @@ Outline:
       {\footnotesize
       \begin{itemize}
         \item $\alpha$ controls "clumpiness"
-        \pause \item $U=$ number of unique $\zeta_g$
+        \pause \item $U=$ number of unique values of $(\beta_g^\top,\sigma^2_g)$
         \pause \item $\op{E}(U) = f(G,\alpha) = \sum_{g=1}^G \alpha/(g + \alpha - 1)$.
         \pause \item Prior for $\alpha$: $\alpha \sim \op{Ga}(3,3/G^{0.5})$
       \end{itemize}
@@ -433,9 +421,26 @@ Outline:
 \end{frame}
 
 \begin{frame}%%[label=current]
-  \frametitle{Directed acyclic graph (DAG)}
+  \frametitle{Additional model specifications}
   \centering
-  \includegraphics[width=\textwidth]{my_dag_small0}
+    \begin{beamerboxesrounded}[upper=upcol,lower=lowcol,shadow=true]{For computational purposes:}
+      \begin{itemize}
+        \item $\nu_k = \frac{\pi_k}{1-\sum_{\ell<k} \pi_\ell} \ind \op{Be}(1,\alpha)$, $k<K$.
+        \pause \item $\nu_K = 1 \implies \pi_\ell =0$ for $\ell>K$.
+        \pause \item Define $\zeta_g \in \{1,\ldots,K\}$, so $(\beta_g^\top,\sigma_g^2) = (\tilde{\beta}_{\zeta_g},\tilde{\sigma}_{\zeta_g}^2)$ \pause 
+      \end{itemize}
+      Note that:
+      \begin{itemize}
+        \item $\zeta_g \ind \op{Categorical}(\pi_1,\ldots,\pi_K)$ \pause and
+        \item $y_g \ind \op{N}(X\tilde{\beta}_{\zeta_g},\tilde{\sigma}_{\zeta_g}^2 W_g^{-1})$.
+        \item $(\tilde{\beta}_k^\top,\tilde{\sigma}^2_k) \ind Q$.
+      \end{itemize}
+      
+      \onslide<1->
+      
+      {\scriptsize \citep{ishwaran2000}}
+    \end{beamerboxesrounded}
+    \onslide<1->
 \end{frame}
 
 \begin{frame}%%[label=current]
@@ -547,7 +552,7 @@ Outline:
     \item GPUs offer a higher degree of parallelism with lower latency than parallel CPU computing
     \item The utility of switching to GPUs is problem dependent:
     \begin{itemize}
-      \item Parallizable task; i.e. decompose into many small similar problems (preferably independent)
+      \item Paralellizable task; i.e. decompose into many small similar problems (preferably independent)
       \item Full GPU utilization; tens of thousands of parallel tasks
       \item Cost/benefit of additional development time
     \end{itemize}
@@ -783,7 +788,7 @@ Outline:
 \end{frame}
 
 \begin{frame}%[label=current]
-  \frametitle{Comparison to results of \citet{landau}}
+  \frametitle{Comparison to results of Landau, Niemi and Nettleton (2017)}
   Low-parent Heterosis (B73$\times$Mo17)
   \begin{columns}
     \column{\dimexpr\paperwidth-10pt}
@@ -812,8 +817,8 @@ Outline:
 \begin{frame}
 \frametitle{Summary}
   \begin{itemize}
-    \item Fully Bayesian approach
-    \item Approximate DP to avoid inappropriate distributional assumptions
+    \item Fully Bayesian nonparametric gene expression model
+    \item Flexibly models the distribution of gene-specific parameters
     \item General model matrix
     \item Made computationally feasible using GPU parallelism
   \end{itemize}
@@ -826,11 +831,7 @@ Outline:
   \bibliography{../mybib}
 \end{frame}
 
-\begin{frame}%[label=current]
-  \frametitle{Acknowledgment}
-  \small%
-  This research was supported by National Institute of General Medical Sciences (NIGMS) of the National Institutes of Health and the joint National Science Foundation / NIGMS Mathematical Biology Program under award number R01GM109458. The content is solely the responsibility of the authors and does not necessarily represent the official views of the National Institutes of Health or the National Science Foundation.
-\end{frame}
+
 
 % \begin{frame}%%[label=current]
 %   \frametitle{Example: DP mixture}

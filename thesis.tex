@@ -37,7 +37,20 @@
 % include path for figures
 \graphicspath{{chapter1/figures_tables/}{chapter2/figures_tables/}{chapter3/figures_tables/}}
 
+%try to insert "Figure" in LOF
+\makeatletter
+\patchcmd{\@caption}{\csname the#1\endcsname}{\csname fnum@#1\endcsname:}{}{}
+\renewcommand*\l@figure{\@dottedtocline{1}{1.5em}{5.5em}} % default for 3rd arg: 2.3em
+
+\let\l@table\l@figure % as in article.cls
+\makeatother
+
 \begin{document}
+
+% toggle on thesis content
+\newtoggle{thesis}
+\toggletrue{thesis}
+
 \DeclareGraphicsExtensions{.jpg,.pdf,.mps,.png}
 \include{titlepage}
 % Optional thesis dedication
@@ -50,53 +63,53 @@
 \listoftables
 \cleardoublepage \phantomsection \addcontentsline{toc}{chapter}{LIST OF FIGURES}
 \listoffigures
+
+\newpage \include{acknowledgements} % optional
+
 % Comment out the next line if NOT using chaptertitle
 \addtocontents{toc}{\def\protect\@chapapp{CHAPTER\ }}
 
-% toggle on thesis content
-\newtoggle{thesis}
-\toggletrue{thesis}
-
-\cleardoublepage \phantomsection \include{acknowlegements} % optional
-\cleardoublepage \phantomsection \include{abstract}        % optional
-
-
+\newpage \include{abstract}        % optional
 
 \newpage
 \pagenumbering{arabic}
 
 \include{introduction}
 
-\chapter{A GPU accelerated nonparametric shrinkage
-model for high-dimensional data}
+\chapter{A GPU ACCELERATED NONPARAMETRIC SHRINKAGE
+MODEL FOR HIGH-DIMENSIONAL DATA}
 \import{chapter2/}{chapter2}
 
-\chapter{Detection of gene heterosis in maize using a Bayesian nonparametric model}
+\chapter{DETECTION OF GENE HETEROSIS IN MAIZE USING A BAYESIAN NONPARAMETRIC MODEL}
 \import{chapter1/}{chapter1}
 
-\chapter{A hierarchical failure-time model for observational data exhibiting infant-mortality and wearout failure modes}
+\addtocontents{toc}{\protect\newpage}
+\chapter{A HIERARCHICAL FAILURE-TIME MODEL FOR OBSERVATIONAL DATA EXHIBITING INFANT-MORTALITY AND\\ WEAROUT FAILURE MODES}
 % \paperinfo{submitted to the Annals of Applied Statistics} % only include if paper has been submitted
 % \paperauthor{Eric Mittman, Colin Lewis-Beck and William Q. Meeker}    % only include if paper has been submitted
 \import{chapter3/}{chapter3}
 
 \include{conclusion}
+
+\addtocontents{toc}{\def\protect\@chapapp{}} \cleardoublepage \phantomsection
+
+\renewcommand{\bibname}{\centerline{BIBLIOGRAPHY}}
+\addcontentsline{toc}{chapter}{BIBLIOGRAPHY}
+\bibliography{mybib}
+
 \appendixtitle
 \appendix
 
-\chapter{Use of CUDA libraries in implementation of BNP Gibbs sampler}
+\chapter{USE OF CUDA LIBRARIES IN IMPLEMENTATION OF BNP GIBBS SAMPLER}
 \import{}{appendix_computation}
 
-\chapter{Derivations of full conditionals for the BNP Gibbs sampler}
+\chapter{DERIVATIONS OF FULL CONDITIONALS FOR THE BNP GIBBS SAMPLER}
 \import{}{appendix_case_study}
 
-\chapter{Definitions used in hierarchical GLFP methodology}
+\chapter{DEFINITIONS USED IN HIERARCHICAL GLFP METHODOLOGY}
 \import{}{appendix_reliability}
 
-\renewcommand{\bibname}{\centerline{BIBLIOGRAPHY}}
 \unappendixtitle
-\newpage
-\phantomsection
-\addcontentsline{toc}{chapter}{BIBLIOGRAPHY}
-\bibliography{mybib}
+
 
 \end{document}
